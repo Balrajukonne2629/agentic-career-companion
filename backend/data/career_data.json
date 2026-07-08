@@ -1,0 +1,1278 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-01-15",
+
+  "skills_vocabulary": [
+    "HTML", "CSS", "JavaScript", "TypeScript", "React", "Vue.js", "Angular",
+    "Next.js", "Sass", "Tailwind CSS", "Bootstrap", "Webpack", "Vite",
+    "Node.js", "Express.js", "Python", "Django", "Flask", "FastAPI",
+    "Java", "Spring Boot", "C++", "C", "C#", ".NET",
+    "SQL", "MySQL", "PostgreSQL", "MongoDB", "Redis", "Firebase",
+    "GraphQL", "REST API", "Git", "Docker", "Kubernetes",
+    "AWS", "Azure", "Google Cloud Platform", "Linux", "Bash Scripting", "Networking",
+    "Data Structures", "Algorithms", "System Design", "Object-Oriented Programming",
+    "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-learn",
+    "Pandas", "NumPy", "Matplotlib", "Seaborn", "Data Wrangling",
+    "Statistical Analysis", "Data Visualization", "SQL Analytics",
+    "Apache Spark", "Apache Kafka", "Airflow", "dbt", "ETL Pipelines",
+    "Data Warehousing", "Snowflake", "BigQuery",
+    "Natural Language Processing", "Computer Vision", "Model Evaluation",
+    "Feature Engineering", "Prompt Engineering",
+    "Network Security", "Cryptography", "Penetration Testing",
+    "Vulnerability Assessment", "SIEM Tools", "Incident Response",
+    "Ethical Hacking", "Firewall Configuration", "Identity & Access Management",
+    "Terraform", "CI/CD", "Jenkins", "Ansible", "Prometheus", "Grafana",
+    "Infrastructure as Code", "Site Reliability Engineering",
+    "Figma Design", "User Research", "Wireframing", "Prototyping",
+    "Usability Testing", "Design Systems", "Accessibility Standards",
+    "Color Theory", "Typography", "Information Architecture",
+    "React Native", "Flutter", "Dart", "Swift", "Kotlin",
+    "Android Development", "iOS Development", "Mobile UI Design",
+    "Push Notifications", "Mobile Performance Optimization"
+  ],
+
+  "tools_vocabulary": [
+    "VS Code", "Git", "GitHub", "GitLab", "Postman", "Docker Desktop",
+    "Chrome DevTools", "npm", "Yarn", "Webpack", "Vite",
+    "Jupyter Notebook", "Google Colab", "Anaconda",
+    "Tableau", "Power BI", "Looker Studio",
+    "AWS Console", "Azure Portal", "Google Cloud Console", "IBM Cloud Console",
+    "Wireshark", "Nmap", "Burp Suite", "Metasploit", "Kali Linux",
+    "Figma", "Adobe XD", "InVision", "Zeplin", "Miro",
+    "Jira", "Confluence", "Slack", "Trello", "Notion",
+    "Linux Terminal", "IntelliJ IDEA", "PyCharm", "Eclipse", "Android Studio",
+    "Xcode", "Expo", "Netlify", "Vercel", "Heroku",
+    "Jenkins", "GitHub Actions", "CircleCI",
+    "Kubernetes Dashboard", "Helm", "Terraform Cloud",
+    "MySQL Workbench", "DBeaver", "MongoDB Compass", "Redis CLI",
+    "Apache JMeter", "Selenium", "Pytest", "Jest",
+    "Storybook", "Lighthouse", "OWASP ZAP", "Splunk"
+  ],
+
+  "interest_categories": [
+    "Web Development",
+    "Frontend Development",
+    "Backend Development",
+    "Full Stack Development",
+    "Mobile Development",
+    "Data Science",
+    "Data Engineering",
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Cloud Computing",
+    "DevOps",
+    "Cybersecurity",
+    "Networking",
+    "Database Management",
+    "UI/UX Design",
+    "Product Design",
+    "Open Source",
+    "Problem Solving",
+    "System Design",
+    "Automation"
+  ],
+
+  "difficulty_levels": [
+    "beginner-friendly",
+    "moderate",
+    "advanced"
+  ],
+
+  "industry_sectors": [
+    "Software Development",
+    "Data & Analytics",
+    "Artificial Intelligence",
+    "Cloud & Infrastructure",
+    "Cybersecurity",
+    "Emerging Technologies"
+  ],
+
+  "careers": [
+
+    {
+      "career_id": "full-stack-developer",
+      "title": "Full Stack Developer",
+      "description": "Full Stack Developers design and build both the client-facing frontend and the server-side backend of web applications. They work across the complete technology stack, from database schema design to UI implementation, and are responsible for ensuring seamless integration between all application layers. Full Stack Developers are highly valued for their versatility and ability to own an entire feature from conception to deployment.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Web Development", "Full Stack Development", "Frontend Development",
+        "Backend Development", "Problem Solving"
+      ],
+      "related_roles": [
+        "Web Developer", "MERN Stack Developer", "MEAN Stack Developer",
+        "Full Stack Engineer", "Software Developer", "Web Application Developer",
+        "Product Engineer", "Application Developer"
+      ],
+      "required_skills": [
+        "HTML", "CSS", "JavaScript", "React", "Node.js",
+        "Express.js", "SQL", "REST API", "Git"
+      ],
+      "nice_to_have_skills": [
+        "TypeScript", "Docker", "Redis", "GraphQL", "AWS"
+      ],
+      "core_tools": [
+        "VS Code", "GitHub", "Postman", "Chrome DevTools", "npm"
+      ],
+      "learning_prerequisites": [
+        "Basic understanding of how the internet and browsers work (HTTP, DNS, rendering)",
+        "Fundamentals of programming logic (variables, loops, conditionals, functions)",
+        "Introduction to command line and terminal usage",
+        "Basic understanding of file systems and text editors"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Full Stack Software Developer Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+          "ibm_certified": true,
+          "duration_weeks": 16
+        },
+        {
+          "name": "Meta Front-End Developer Professional Certificate",
+          "provider": "Meta / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/meta-front-end-developer",
+          "ibm_certified": false,
+          "duration_weeks": 7
+        },
+        {
+          "name": "Meta Back-End Developer Professional Certificate",
+          "provider": "Meta / Coursera",
+          "level": "intermediate",
+          "url": "https://www.coursera.org/professional-certificates/meta-back-end-developer",
+          "ibm_certified": false,
+          "duration_weeks": 8
+        },
+        {
+          "name": "AWS Certified Developer – Associate",
+          "provider": "Amazon Web Services",
+          "level": "advanced",
+          "url": "https://aws.amazon.com/certification/certified-developer-associate/",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Personal Portfolio Website",
+          "description": "Build a fully responsive personal portfolio website showcasing projects, skills, and contact information using HTML, CSS, and JavaScript.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["HTML", "CSS", "JavaScript"],
+          "estimated_hours": 20
+        },
+        {
+          "title": "Full Stack Blog Application",
+          "description": "Build a complete blog platform with user authentication, CRUD operations for posts, a React frontend, Node.js/Express backend, and a SQL database.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["React", "Node.js", "Express.js", "SQL", "JavaScript", "Git"],
+          "estimated_hours": 60
+        },
+        {
+          "title": "E-Commerce Web Application",
+          "description": "Develop a full-featured e-commerce platform with product listings, cart, user authentication, payment integration, order management, and an admin dashboard.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["React", "Node.js", "Express.js", "SQL", "JavaScript", "Git", "REST API"],
+          "estimated_hours": 120
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "4-8",
+        "mid_level_lpa": "10-20",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Full Stack Developer",
+        "mid_role": "Full Stack Developer",
+        "senior_role": "Senior Full Stack Engineer / Tech Lead"
+      }
+    },
+
+    {
+      "career_id": "frontend-developer",
+      "title": "Frontend Developer",
+      "description": "Frontend Developers build the visual and interactive layer of web applications that users directly experience. They translate UI/UX designs into responsive, accessible, and performant interfaces using modern web technologies. Frontend Developers are responsible for ensuring cross-browser compatibility, smooth user interactions, and optimal page load performance.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "beginner-friendly",
+      "suitable_for_interests": [
+        "Web Development", "Frontend Development", "UI/UX Design",
+        "Product Design", "Problem Solving"
+      ],
+      "related_roles": [
+        "UI Developer", "Web Developer", "React Developer", "Angular Developer",
+        "Vue Developer", "JavaScript Developer", "Web Designer", "Frontend Engineer"
+      ],
+      "required_skills": [
+        "HTML", "CSS", "JavaScript", "React", "TypeScript",
+        "Sass", "Git", "REST API"
+      ],
+      "nice_to_have_skills": [
+        "Next.js", "Tailwind CSS", "GraphQL", "Webpack", "Vite"
+      ],
+      "core_tools": [
+        "VS Code", "Chrome DevTools", "GitHub", "npm", "Figma", "Storybook"
+      ],
+      "learning_prerequisites": [
+        "Basic understanding of how browsers render web pages",
+        "Fundamentals of programming logic",
+        "Basic understanding of design principles (layout, spacing, color)",
+        "Introduction to version control concepts"
+      ],
+      "certifications": [
+        {
+          "name": "Meta Front-End Developer Professional Certificate",
+          "provider": "Meta / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/meta-front-end-developer",
+          "ibm_certified": false,
+          "duration_weeks": 7
+        },
+        {
+          "name": "IBM Full Stack Software Developer Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-cloud-developer",
+          "ibm_certified": true,
+          "duration_weeks": 16
+        },
+        {
+          "name": "JavaScript Algorithms and Data Structures",
+          "provider": "freeCodeCamp",
+          "level": "intermediate",
+          "url": "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Responsive Landing Page",
+          "description": "Design and build a fully responsive product landing page with smooth scrolling, animations, and a mobile-first layout using HTML, CSS, and JavaScript.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["HTML", "CSS", "JavaScript"],
+          "estimated_hours": 15
+        },
+        {
+          "title": "Weather Dashboard Application",
+          "description": "Build a weather application that fetches live data from a public weather API, displays forecasts with dynamic UI updates, and supports city search functionality.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["React", "JavaScript", "REST API", "CSS"],
+          "estimated_hours": 30
+        },
+        {
+          "title": "Component Library with Storybook",
+          "description": "Design and develop a reusable React component library with TypeScript, documented using Storybook, following accessibility standards and design system principles.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["React", "TypeScript", "Sass", "JavaScript"],
+          "estimated_hours": 80
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "3-7",
+        "mid_level_lpa": "8-18",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Frontend Developer",
+        "mid_role": "Frontend Developer",
+        "senior_role": "Senior Frontend Engineer / UI Architect"
+      }
+    },
+
+    {
+      "career_id": "backend-developer",
+      "title": "Backend Developer",
+      "description": "Backend Developers build and maintain the server-side logic, databases, and APIs that power web and mobile applications. They design systems for scalability, security, and reliability, handling everything from authentication and authorization to data processing and third-party integrations. Backend Developers are the engineers behind the scenes ensuring applications are fast, secure, and always available.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Backend Development", "Database Management", "System Design",
+        "Problem Solving", "Web Development"
+      ],
+      "related_roles": [
+        "Server-Side Developer", "API Developer", "Node.js Developer",
+        "Python Developer", "Java Developer", "Software Engineer",
+        "Application Backend Engineer", "REST API Developer"
+      ],
+      "required_skills": [
+        "Node.js", "Express.js", "Python", "SQL", "MongoDB",
+        "REST API", "Git", "Data Structures", "Algorithms"
+      ],
+      "nice_to_have_skills": [
+        "Docker", "Redis", "GraphQL", "AWS", "Kubernetes"
+      ],
+      "core_tools": [
+        "VS Code", "Postman", "GitHub", "Docker Desktop",
+        "MySQL Workbench", "MongoDB Compass", "Linux Terminal"
+      ],
+      "learning_prerequisites": [
+        "Solid understanding of programming fundamentals (OOP, functions, data types)",
+        "Basic understanding of how client-server architecture works",
+        "Introduction to databases and basic SQL queries",
+        "Familiarity with command line operations"
+      ],
+      "certifications": [
+        {
+          "name": "Meta Back-End Developer Professional Certificate",
+          "provider": "Meta / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/meta-back-end-developer",
+          "ibm_certified": false,
+          "duration_weeks": 8
+        },
+        {
+          "name": "IBM Back-End Development Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-backend-development",
+          "ibm_certified": true,
+          "duration_weeks": 10
+        },
+        {
+          "name": "AWS Certified Developer – Associate",
+          "provider": "Amazon Web Services",
+          "level": "advanced",
+          "url": "https://aws.amazon.com/certification/certified-developer-associate/",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "RESTful User Authentication API",
+          "description": "Build a secure REST API with user registration, login, JWT-based authentication, and role-based access control using Node.js and Express.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Node.js", "Express.js", "SQL", "REST API", "Git"],
+          "estimated_hours": 25
+        },
+        {
+          "title": "Task Management Backend System",
+          "description": "Develop a complete task management API with full CRUD operations, user assignments, priority levels, deadlines, and filtering capabilities with a relational database.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Node.js", "Express.js", "SQL", "MongoDB", "REST API"],
+          "estimated_hours": 50
+        },
+        {
+          "title": "Microservices Architecture Application",
+          "description": "Design and implement a microservices-based system with separate services for users, products, and orders communicating via REST APIs with Docker containerization.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Node.js", "Express.js", "SQL", "REST API", "Data Structures"],
+          "estimated_hours": 100
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "4-8",
+        "mid_level_lpa": "10-22",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Backend Developer",
+        "mid_role": "Backend Developer",
+        "senior_role": "Senior Backend Engineer / System Architect"
+      }
+    },
+
+    {
+      "career_id": "software-engineer",
+      "title": "Software Engineer",
+      "description": "Software Engineers apply engineering principles to design, develop, test, and maintain software systems across a wide range of domains and technology stacks. Unlike narrower roles, Software Engineers are expected to contribute across multiple layers of an application, reason about system design, write production-quality code, and participate in architectural decisions. They are one of the most broadly hired roles in the Indian IT industry.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Problem Solving", "System Design", "Web Development",
+        "Backend Development", "Open Source"
+      ],
+      "related_roles": [
+        "Software Developer", "Application Developer", "Programmer",
+        "SDE", "SDE-1", "Associate Software Engineer",
+        "Systems Engineer", "Product Engineer"
+      ],
+      "required_skills": [
+        "Data Structures", "Algorithms", "Object-Oriented Programming",
+        "Java", "Python", "SQL", "REST API", "Git", "System Design"
+      ],
+      "nice_to_have_skills": [
+        "Spring Boot", "Docker", "Linux", "AWS"
+      ],
+      "core_tools": [
+        "IntelliJ IDEA", "VS Code", "GitHub",
+        "Jira", "Linux Terminal", "Postman"
+      ],
+      "learning_prerequisites": [
+        "Mathematical foundations: discrete mathematics and basic probability",
+        "Introduction to computer science concepts (binary, memory, processes)",
+        "Basic programming in any language",
+        "Understanding of what software development workflows look like"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Applied AI Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/applied-artifical-intelligence-ibm-watson-ai",
+          "ibm_certified": true,
+          "duration_weeks": 8
+        },
+        {
+          "name": "Google Associate Cloud Engineer",
+          "provider": "Google Cloud",
+          "level": "intermediate",
+          "url": "https://cloud.google.com/certification/cloud-engineer",
+          "ibm_certified": false,
+          "duration_weeks": 10
+        },
+        {
+          "name": "Oracle Certified Professional: Java SE Developer",
+          "provider": "Oracle",
+          "level": "advanced",
+          "url": "https://education.oracle.com/oracle-certified-professional-java-se-17-developer/trackp_OCPJSE17",
+          "ibm_certified": false,
+          "duration_weeks": 14
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Library Management System",
+          "description": "Build a console-based or web-based library management system with CRUD operations, search, and cataloging using OOP principles and a relational database.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Java", "SQL", "Object-Oriented Programming", "Git"],
+          "estimated_hours": 30
+        },
+        {
+          "title": "Online Examination Platform",
+          "description": "Develop a web-based exam platform with timed quizzes, question randomization, auto-grading, result analytics, and role-based access for students and administrators.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Java", "SQL", "System Design", "Object-Oriented Programming", "REST API"],
+          "estimated_hours": 70
+        },
+        {
+          "title": "Distributed Cache System",
+          "description": "Implement a simplified distributed key-value cache system demonstrating understanding of system design principles, consistency, and distributed computing concepts.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Java", "Data Structures", "Algorithms", "System Design"],
+          "estimated_hours": 110
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "4-10",
+        "mid_level_lpa": "12-25",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Associate Software Engineer / SDE-1",
+        "mid_role": "Software Engineer / SDE-2",
+        "senior_role": "Senior Software Engineer / Principal Engineer"
+      }
+    },
+
+    {
+      "career_id": "data-analyst",
+      "title": "Data Analyst",
+      "description": "Data Analysts collect, process, and interpret large datasets to help organizations make evidence-based decisions. They build dashboards, perform statistical analyses, identify trends, and communicate insights to non-technical stakeholders through visualizations and reports. Data Analysts serve as the bridge between raw business data and actionable strategic recommendations.",
+      "industry_sector": "Data & Analytics",
+      "difficulty_level": "beginner-friendly",
+      "suitable_for_interests": [
+        "Data Science", "Problem Solving", "Database Management",
+        "Data Engineering", "Artificial Intelligence"
+      ],
+      "related_roles": [
+        "Business Analyst", "Reporting Analyst", "BI Analyst",
+        "Data Insights Analyst", "Analytics Engineer",
+        "Junior Data Scientist", "Research Analyst"
+      ],
+      "required_skills": [
+        "SQL", "Python", "Pandas", "NumPy", "Data Visualization",
+        "Statistical Analysis", "Git"
+      ],
+      "nice_to_have_skills": [
+        "Seaborn", "Matplotlib", "Machine Learning", "BigQuery", "Data Wrangling"
+      ],
+      "core_tools": [
+        "Jupyter Notebook", "Google Colab", "Tableau", "Power BI",
+        "MySQL Workbench", "Looker Studio", "VS Code"
+      ],
+      "learning_prerequisites": [
+        "Basic mathematics and statistics (mean, median, standard deviation, probability)",
+        "Introduction to spreadsheets and data tables",
+        "Basic programming concepts in any language",
+        "Understanding of business data contexts (sales, operations, marketing)"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Data Analyst Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-data-analyst",
+          "ibm_certified": true,
+          "duration_weeks": 11
+        },
+        {
+          "name": "Google Data Analytics Professional Certificate",
+          "provider": "Google / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/google-data-analytics",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        },
+        {
+          "name": "Microsoft Power BI Data Analyst Associate (PL-300)",
+          "provider": "Microsoft",
+          "level": "intermediate",
+          "url": "https://learn.microsoft.com/en-us/certifications/power-bi-data-analyst-associate/",
+          "ibm_certified": false,
+          "duration_weeks": 8
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Sales Performance Dashboard",
+          "description": "Analyze a public retail sales dataset, clean and transform the data using Python and Pandas, and build an interactive dashboard displaying key performance metrics.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Python", "Pandas", "Data Visualization", "SQL"],
+          "estimated_hours": 20
+        },
+        {
+          "title": "Customer Churn Analysis",
+          "description": "Perform end-to-end exploratory data analysis on a customer churn dataset, identify key churn indicators, build visualizations, and present findings in a structured report.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Python", "Pandas", "NumPy", "Statistical Analysis", "Data Visualization"],
+          "estimated_hours": 45
+        },
+        {
+          "title": "Multi-Source Business Intelligence Report",
+          "description": "Combine data from multiple public datasets, build a comprehensive BI report using SQL transformations and Tableau or Power BI, with executive-level storytelling.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["SQL", "Python", "Pandas", "Data Visualization", "Statistical Analysis"],
+          "estimated_hours": 80
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "3-7",
+        "mid_level_lpa": "8-18",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Data Analyst",
+        "mid_role": "Data Analyst",
+        "senior_role": "Senior Data Analyst / Analytics Manager"
+      }
+    },
+
+    {
+      "career_id": "data-engineer",
+      "title": "Data Engineer",
+      "description": "Data Engineers design, build, and maintain the infrastructure and pipelines that move, transform, and store data at scale. They are responsible for ensuring data flows reliably and efficiently from source systems to data warehouses and analytical platforms, enabling Data Analysts and Data Scientists to access clean, structured data. Data Engineering is one of the fastest-growing and highest-paying data roles in the industry.",
+      "industry_sector": "Data & Analytics",
+      "difficulty_level": "advanced",
+      "suitable_for_interests": [
+        "Data Engineering", "Data Science", "Database Management",
+        "Cloud Computing", "Automation"
+      ],
+      "related_roles": [
+        "ETL Developer", "Data Pipeline Engineer", "Analytics Engineer",
+        "Big Data Engineer", "Data Infrastructure Engineer",
+        "Data Platform Engineer", "Data Architect"
+      ],
+      "required_skills": [
+        "Python", "SQL", "Apache Spark", "Apache Kafka",
+        "Airflow", "ETL Pipelines", "Data Warehousing", "AWS", "Git"
+      ],
+      "nice_to_have_skills": [
+        "dbt", "Snowflake", "BigQuery", "Kubernetes", "Bash Scripting"
+      ],
+      "core_tools": [
+        "VS Code", "Jupyter Notebook", "GitHub", "Docker Desktop",
+        "DBeaver", "AWS Console", "Google Cloud Console", "Linux Terminal"
+      ],
+      "learning_prerequisites": [
+        "Strong SQL fundamentals including joins, aggregations, and window functions",
+        "Python programming with a focus on scripting and automation",
+        "Basic understanding of distributed systems and cloud concepts",
+        "Familiarity with relational and non-relational databases"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Data Engineering Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-data-engineer",
+          "ibm_certified": true,
+          "duration_weeks": 16
+        },
+        {
+          "name": "Google Professional Data Engineer",
+          "provider": "Google Cloud",
+          "level": "advanced",
+          "url": "https://cloud.google.com/certification/data-engineer",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        },
+        {
+          "name": "AWS Certified Data Analytics – Specialty",
+          "provider": "Amazon Web Services",
+          "level": "advanced",
+          "url": "https://aws.amazon.com/certification/certified-data-analytics-specialty/",
+          "ibm_certified": false,
+          "duration_weeks": 14
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Automated Data Pipeline with Python",
+          "description": "Build an automated ETL pipeline that extracts data from a public API, transforms it using Pandas, loads it into a local SQL database, and schedules runs using a simple scheduler.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Python", "SQL", "ETL Pipelines", "Git"],
+          "estimated_hours": 30
+        },
+        {
+          "title": "Batch Data Processing with Apache Spark",
+          "description": "Process a large public dataset using Apache Spark, perform aggregations and transformations, and store the processed results in a cloud data warehouse.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Apache Spark", "Python", "SQL", "Data Warehousing"],
+          "estimated_hours": 60
+        },
+        {
+          "title": "Real-Time Streaming Data Pipeline",
+          "description": "Build a real-time data pipeline using Apache Kafka for event streaming, process events with Python, and store aggregated results in a cloud database with a monitoring dashboard.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Apache Kafka", "Apache Spark", "Python", "SQL", "ETL Pipelines"],
+          "estimated_hours": 100
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "6-12",
+        "mid_level_lpa": "14-28",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Data Engineer",
+        "mid_role": "Data Engineer",
+        "senior_role": "Senior Data Engineer / Data Architect"
+      }
+    },
+
+    {
+      "career_id": "ai-ml-engineer",
+      "title": "AI/ML Engineer",
+      "description": "AI/ML Engineers design, build, and deploy machine learning models and AI systems that power intelligent applications. They bridge the gap between research-level machine learning and production-ready software, handling everything from data preprocessing and model training to deployment, monitoring, and optimization. This is one of the most in-demand and highest-compensated technical roles in the global technology industry.",
+      "industry_sector": "Artificial Intelligence",
+      "difficulty_level": "advanced",
+      "suitable_for_interests": [
+        "Artificial Intelligence", "Machine Learning", "Data Science",
+        "Problem Solving", "Data Engineering"
+      ],
+      "related_roles": [
+        "Machine Learning Engineer", "AI Engineer", "Data Scientist",
+        "NLP Engineer", "Computer Vision Engineer", "Research Engineer",
+        "MLOps Engineer", "Applied Scientist"
+      ],
+      "required_skills": [
+        "Python", "Machine Learning", "Deep Learning", "TensorFlow",
+        "PyTorch", "Scikit-learn", "Pandas", "NumPy",
+        "Feature Engineering", "Model Evaluation", "SQL", "Git"
+      ],
+      "nice_to_have_skills": [
+        "Natural Language Processing", "Computer Vision",
+        "Prompt Engineering", "AWS", "Docker"
+      ],
+      "core_tools": [
+        "Jupyter Notebook", "Google Colab", "VS Code", "Anaconda",
+        "GitHub", "Docker Desktop", "AWS Console", "IBM Cloud Console"
+      ],
+      "learning_prerequisites": [
+        "Strong foundation in mathematics: linear algebra, calculus, probability, and statistics",
+        "Proficient Python programming including NumPy and Pandas",
+        "Basic understanding of algorithms and data structures",
+        "Conceptual understanding of how neural networks learn"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Machine Learning Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "intermediate",
+          "url": "https://www.coursera.org/professional-certificates/ibm-machine-learning",
+          "ibm_certified": true,
+          "duration_weeks": 16
+        },
+        {
+          "name": "IBM AI Engineering Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "intermediate",
+          "url": "https://www.coursera.org/professional-certificates/ai-engineer",
+          "ibm_certified": true,
+          "duration_weeks": 16
+        },
+        {
+          "name": "TensorFlow Developer Certificate",
+          "provider": "Google / TensorFlow",
+          "level": "intermediate",
+          "url": "https://www.tensorflow.org/certificate",
+          "ibm_certified": false,
+          "duration_weeks": 10
+        },
+        {
+          "name": "AWS Certified Machine Learning – Specialty",
+          "provider": "Amazon Web Services",
+          "level": "advanced",
+          "url": "https://aws.amazon.com/certification/certified-machine-learning-specialty/",
+          "ibm_certified": false,
+          "duration_weeks": 14
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Sentiment Analysis Classifier",
+          "description": "Build a text sentiment analysis model using Scikit-learn or a pre-trained model trained on a public review dataset, with a simple web interface to test predictions.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Python", "Machine Learning", "Scikit-learn", "Pandas", "NumPy"],
+          "estimated_hours": 25
+        },
+        {
+          "title": "Image Classification with Deep Learning",
+          "description": "Train a convolutional neural network using TensorFlow or PyTorch to classify images from a public dataset with data augmentation and model performance visualization.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Python", "Deep Learning", "TensorFlow", "PyTorch", "Feature Engineering", "Model Evaluation"],
+          "estimated_hours": 60
+        },
+        {
+          "title": "End-to-End ML Pipeline with Deployment",
+          "description": "Build a complete machine learning pipeline from data ingestion through model training, evaluation, and deployment as a REST API endpoint with monitoring capability.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Python", "Machine Learning", "Deep Learning", "TensorFlow", "Feature Engineering", "Model Evaluation", "SQL"],
+          "estimated_hours": 120
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "6-12",
+        "mid_level_lpa": "15-35",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior ML Engineer / Data Scientist",
+        "mid_role": "ML Engineer / AI Engineer",
+        "senior_role": "Senior ML Engineer / AI Research Lead"
+      }
+    },
+
+    {
+      "career_id": "cloud-engineer",
+      "title": "Cloud Engineer",
+      "description": "Cloud Engineers design, implement, and manage cloud infrastructure and services that host modern applications at scale. They work with cloud providers to architect solutions for compute, storage, networking, security, and cost optimization. Cloud Engineers ensure that applications are highly available, scalable, and resilient, and increasingly use infrastructure-as-code tools to automate environment provisioning.",
+      "industry_sector": "Cloud & Infrastructure",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Cloud Computing", "DevOps", "System Design",
+        "Networking", "Automation"
+      ],
+      "related_roles": [
+        "Cloud Solutions Architect", "AWS Engineer", "Azure Engineer",
+        "GCP Engineer", "Cloud Infrastructure Engineer",
+        "Cloud Operations Engineer", "Site Reliability Engineer"
+      ],
+      "required_skills": [
+        "AWS", "Linux", "Python", "Bash Scripting",
+        "Terraform", "Docker", "Networking", "SQL", "Git"
+      ],
+      "nice_to_have_skills": [
+        "Kubernetes", "Azure", "Google Cloud Platform", "Ansible", "CI/CD"
+      ],
+      "core_tools": [
+        "AWS Console", "IBM Cloud Console", "Linux Terminal",
+        "Terraform Cloud", "Docker Desktop", "GitHub", "VS Code", "Slack"
+      ],
+      "learning_prerequisites": [
+        "Basic understanding of computer networking (IP, DNS, HTTP, TCP/IP)",
+        "Familiarity with Linux command line operations",
+        "Basic programming or scripting knowledge (Python or Bash)",
+        "Conceptual understanding of virtual machines and containers"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Cloud Associate Developer Certification",
+          "provider": "IBM",
+          "level": "beginner",
+          "url": "https://www.ibm.com/certify/cert?id=C0001002",
+          "ibm_certified": true,
+          "duration_weeks": 8
+        },
+        {
+          "name": "AWS Certified Cloud Practitioner",
+          "provider": "Amazon Web Services",
+          "level": "beginner",
+          "url": "https://aws.amazon.com/certification/certified-cloud-practitioner/",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        },
+        {
+          "name": "AWS Certified Solutions Architect – Associate",
+          "provider": "Amazon Web Services",
+          "level": "intermediate",
+          "url": "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        },
+        {
+          "name": "HashiCorp Certified: Terraform Associate",
+          "provider": "HashiCorp",
+          "level": "intermediate",
+          "url": "https://www.hashicorp.com/certification/terraform-associate",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Static Website Deployment on AWS S3",
+          "description": "Deploy a static website using AWS S3 and CloudFront, configure HTTPS, and set up basic access logging and cost alerts.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["AWS", "Linux", "Git"],
+          "estimated_hours": 15
+        },
+        {
+          "title": "Infrastructure Provisioning with Terraform",
+          "description": "Use Terraform to provision a complete AWS environment with a VPC, subnets, EC2 instances, security groups, and an RDS database as infrastructure-as-code.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Terraform", "AWS", "Linux", "Bash Scripting"],
+          "estimated_hours": 50
+        },
+        {
+          "title": "Auto-Scaling Web Application Architecture",
+          "description": "Architect and deploy a containerized web application on AWS with auto-scaling groups, load balancing, health monitoring, and automated backup using cloud-native services.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["AWS", "Docker", "Terraform", "Python", "Linux", "Bash Scripting"],
+          "estimated_hours": 90
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "5-10",
+        "mid_level_lpa": "12-25",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Cloud Engineer / Cloud Associate",
+        "mid_role": "Cloud Engineer",
+        "senior_role": "Senior Cloud Engineer / Cloud Solutions Architect"
+      }
+    },
+
+    {
+      "career_id": "devops-engineer",
+      "title": "DevOps Engineer",
+      "description": "DevOps Engineers bridge software development and IT operations by automating the software delivery pipeline from code commit through testing, deployment, and monitoring. They implement CI/CD pipelines, manage containerized infrastructure, ensure system reliability, and embed security into the development lifecycle. DevOps is the operational backbone of modern cloud-native software delivery.",
+      "industry_sector": "Cloud & Infrastructure",
+      "difficulty_level": "advanced",
+      "suitable_for_interests": [
+        "DevOps", "Cloud Computing", "Automation",
+        "System Design", "Networking"
+      ],
+      "related_roles": [
+        "Site Reliability Engineer", "Platform Engineer", "Build Engineer",
+        "Release Engineer", "Cloud DevOps Engineer",
+        "Infrastructure Engineer", "MLOps Engineer"
+      ],
+      "required_skills": [
+        "Linux", "Docker", "Kubernetes", "CI/CD", "Jenkins",
+        "Terraform", "Python", "Bash Scripting", "AWS", "Git", "Prometheus"
+      ],
+      "nice_to_have_skills": [
+        "Ansible", "Grafana", "Infrastructure as Code",
+        "Site Reliability Engineering", "Azure"
+      ],
+      "core_tools": [
+        "Linux Terminal", "Docker Desktop", "Kubernetes Dashboard",
+        "GitHub Actions", "Terraform Cloud",
+        "AWS Console", "Helm", "Slack", "Jira"
+      ],
+      "learning_prerequisites": [
+        "Solid Linux administration and command line proficiency",
+        "Basic understanding of networking (ports, protocols, firewalls)",
+        "Scripting fundamentals in Python or Bash",
+        "Familiarity with software development lifecycle and version control"
+      ],
+      "certifications": [
+        {
+          "name": "IBM DevOps and Software Engineering Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/devops-and-software-engineering",
+          "ibm_certified": true,
+          "duration_weeks": 18
+        },
+        {
+          "name": "Certified Kubernetes Administrator (CKA)",
+          "provider": "Cloud Native Computing Foundation",
+          "level": "advanced",
+          "url": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        },
+        {
+          "name": "HashiCorp Certified: Terraform Associate",
+          "provider": "HashiCorp",
+          "level": "intermediate",
+          "url": "https://www.hashicorp.com/certification/terraform-associate",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        },
+        {
+          "name": "AWS Certified DevOps Engineer – Professional",
+          "provider": "Amazon Web Services",
+          "level": "advanced",
+          "url": "https://aws.amazon.com/certification/certified-devops-engineer-professional/",
+          "ibm_certified": false,
+          "duration_weeks": 14
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Dockerized Application Setup",
+          "description": "Containerize an existing web application using Docker, create a docker-compose configuration for local development with a database, and document the setup process.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Docker", "Linux", "Bash Scripting", "Git"],
+          "estimated_hours": 20
+        },
+        {
+          "title": "CI/CD Pipeline with GitHub Actions",
+          "description": "Build an automated CI/CD pipeline for a web application using GitHub Actions, including automated testing, Docker image building, and deployment to a cloud environment.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["CI/CD", "Docker", "Linux", "Python", "AWS"],
+          "estimated_hours": 55
+        },
+        {
+          "title": "Kubernetes Cluster Deployment and Monitoring",
+          "description": "Deploy a multi-service application on a Kubernetes cluster with Helm charts, set up Prometheus and Grafana for monitoring, configure alerts, and implement rolling deployments.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Kubernetes", "Docker", "Terraform", "AWS", "Prometheus", "CI/CD"],
+          "estimated_hours": 100
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "5-10",
+        "mid_level_lpa": "12-28",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior DevOps Engineer",
+        "mid_role": "DevOps Engineer",
+        "senior_role": "Senior DevOps Engineer / Platform Architect"
+      }
+    },
+
+    {
+      "career_id": "cybersecurity-analyst",
+      "title": "Cybersecurity Analyst",
+      "description": "Cybersecurity Analysts protect an organization's digital assets by monitoring systems for threats, investigating security incidents, conducting vulnerability assessments, and implementing defensive controls. They work at the intersection of IT infrastructure, risk management, and compliance, and are responsible for ensuring that organizational data and systems remain confidential, available, and intact.",
+      "industry_sector": "Cybersecurity",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Cybersecurity", "Networking", "Problem Solving",
+        "System Design", "Automation"
+      ],
+      "related_roles": [
+        "Information Security Analyst", "SOC Analyst", "Security Engineer",
+        "Penetration Tester", "Ethical Hacker", "Security Operations Analyst",
+        "Threat Intelligence Analyst", "Network Security Engineer"
+      ],
+      "required_skills": [
+        "Network Security", "Linux", "Penetration Testing",
+        "Vulnerability Assessment", "SIEM Tools", "Cryptography",
+        "Python", "Ethical Hacking", "Incident Response", "Git"
+      ],
+      "nice_to_have_skills": [
+        "Firewall Configuration", "Identity & Access Management",
+        "AWS", "Bash Scripting"
+      ],
+      "core_tools": [
+        "Kali Linux", "Wireshark", "Nmap", "Burp Suite",
+        "Metasploit", "OWASP ZAP", "Splunk", "Linux Terminal"
+      ],
+      "learning_prerequisites": [
+        "Solid understanding of computer networking fundamentals (TCP/IP, DNS, HTTP, firewalls)",
+        "Basic Linux command line proficiency",
+        "Introduction to operating system concepts (processes, memory, file systems)",
+        "Basic programming or scripting knowledge"
+      ],
+      "certifications": [
+        {
+          "name": "IBM Cybersecurity Analyst Professional Certificate",
+          "provider": "IBM / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/ibm-cybersecurity-analyst",
+          "ibm_certified": true,
+          "duration_weeks": 8
+        },
+        {
+          "name": "CompTIA Security+",
+          "provider": "CompTIA",
+          "level": "beginner",
+          "url": "https://www.comptia.org/certifications/security",
+          "ibm_certified": false,
+          "duration_weeks": 8
+        },
+        {
+          "name": "Certified Ethical Hacker (CEH)",
+          "provider": "EC-Council",
+          "level": "intermediate",
+          "url": "https://www.eccouncil.org/programs/certified-ethical-hacker-ceh/",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        },
+        {
+          "name": "CompTIA PenTest+",
+          "provider": "CompTIA",
+          "level": "advanced",
+          "url": "https://www.comptia.org/certifications/pentest",
+          "ibm_certified": false,
+          "duration_weeks": 10
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Home Lab Network Security Setup",
+          "description": "Set up a virtual home lab with multiple VMs, configure network segmentation, enable logging, and perform basic scanning using Nmap and Wireshark to understand network traffic patterns.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Network Security", "Linux", "Vulnerability Assessment"],
+          "estimated_hours": 25
+        },
+        {
+          "title": "Web Application Vulnerability Assessment",
+          "description": "Perform a structured vulnerability assessment on a deliberately vulnerable web application (DVWA or WebGoat), document findings, and propose remediation using OWASP methodology.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["Penetration Testing", "Vulnerability Assessment", "Ethical Hacking", "Python"],
+          "estimated_hours": 50
+        },
+        {
+          "title": "Security Operations Center (SOC) Simulation",
+          "description": "Build a simulated SOC environment using open-source SIEM tools, ingest log data from multiple sources, create detection rules, and simulate and investigate a security incident.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["SIEM Tools", "Network Security", "Python", "Linux", "Incident Response"],
+          "estimated_hours": 90
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "4-8",
+        "mid_level_lpa": "10-22",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Security Analyst / SOC Analyst L1",
+        "mid_role": "Cybersecurity Analyst / SOC Analyst L2",
+        "senior_role": "Senior Security Engineer / Security Architect"
+      }
+    },
+
+    {
+      "career_id": "ui-ux-designer",
+      "title": "UI/UX Designer",
+      "description": "UI/UX Designers create the visual and experiential design of digital products, ensuring that interfaces are intuitive, accessible, and aesthetically compelling. UX focuses on user research, information architecture, and interaction design, while UI focuses on the visual implementation of those designs. Modern UI/UX Designers must bridge both disciplines and collaborate closely with engineering and product teams.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "beginner-friendly",
+      "suitable_for_interests": [
+        "UI/UX Design", "Product Design", "Frontend Development",
+        "Web Development", "Problem Solving"
+      ],
+      "related_roles": [
+        "Product Designer", "Interaction Designer", "UX Researcher",
+        "Visual Designer", "Web Designer", "Graphic Designer",
+        "Design Systems Designer", "User Experience Designer"
+      ],
+      "required_skills": [
+        "Figma Design", "User Research", "Wireframing", "Prototyping",
+        "Usability Testing", "Design Systems", "Accessibility Standards",
+        "Color Theory", "Typography", "Information Architecture"
+      ],
+      "nice_to_have_skills": [
+        "HTML", "CSS", "JavaScript", "Data Visualization"
+      ],
+      "core_tools": [
+        "Figma", "Adobe XD", "InVision", "Miro",
+        "Zeplin", "Notion", "Jira", "Slack"
+      ],
+      "learning_prerequisites": [
+        "Basic understanding of human psychology and how users think and behave",
+        "Familiarity with visual design concepts (layout, hierarchy, contrast)",
+        "Introduction to design thinking methodology",
+        "Comfort with computer applications and cloud-based collaboration tools"
+      ],
+      "certifications": [
+        {
+          "name": "Google UX Design Professional Certificate",
+          "provider": "Google / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/professional-certificates/google-ux-design",
+          "ibm_certified": false,
+          "duration_weeks": 6
+        },
+        {
+          "name": "Interaction Design Foundation UX Certification",
+          "provider": "Interaction Design Foundation",
+          "level": "intermediate",
+          "url": "https://www.interaction-design.org/courses",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        },
+        {
+          "name": "Nielsen Norman Group UX Certification",
+          "provider": "Nielsen Norman Group",
+          "level": "advanced",
+          "url": "https://www.nngroup.com/ux-certification/",
+          "ibm_certified": false,
+          "duration_weeks": 10
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "Mobile App UI Redesign",
+          "description": "Select a real or hypothetical mobile app with poor UX, conduct a heuristic evaluation, and redesign 5 to 8 key screens with improved information architecture and visual design in Figma.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["Figma Design", "Wireframing", "Color Theory", "Typography", "Information Architecture"],
+          "estimated_hours": 20
+        },
+        {
+          "title": "End-to-End UX Research and Prototype",
+          "description": "Conduct user interviews, affinity mapping, create user personas and journey maps, then build a mid-fidelity interactive prototype for a new product concept using Figma.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["User Research", "Wireframing", "Prototyping", "Information Architecture", "Usability Testing"],
+          "estimated_hours": 50
+        },
+        {
+          "title": "Design System for a Web Application",
+          "description": "Build a comprehensive design system including a component library, typography scale, color palette, spacing guidelines, and interaction patterns for a medium-complexity web application.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["Figma Design", "Design Systems", "Typography", "Color Theory", "Accessibility Standards"],
+          "estimated_hours": 80
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "3-7",
+        "mid_level_lpa": "8-18",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior UI/UX Designer",
+        "mid_role": "UI/UX Designer",
+        "senior_role": "Senior Product Designer / Head of Design"
+      }
+    },
+
+    {
+      "career_id": "mobile-app-developer",
+      "title": "Mobile App Developer",
+      "description": "Mobile App Developers build applications for smartphones and tablets, targeting Android, iOS, or both platforms simultaneously using cross-platform frameworks. They are responsible for delivering smooth, responsive, and battery-efficient user experiences, handling device-specific APIs for notifications, cameras, and sensors, and publishing applications to the Google Play Store and Apple App Store.",
+      "industry_sector": "Software Development",
+      "difficulty_level": "moderate",
+      "suitable_for_interests": [
+        "Mobile Development", "Web Development", "Frontend Development",
+        "UI/UX Design", "Problem Solving"
+      ],
+      "related_roles": [
+        "Android Developer", "iOS Developer", "React Native Developer",
+        "Flutter Developer", "Cross-Platform Developer",
+        "App Developer", "Mobile Engineer"
+      ],
+      "required_skills": [
+        "React Native", "Flutter", "Dart", "JavaScript",
+        "Mobile UI Design", "REST API", "Git",
+        "Push Notifications", "Mobile Performance Optimization"
+      ],
+      "nice_to_have_skills": [
+        "Swift", "Kotlin", "Android Development", "iOS Development", "Firebase"
+      ],
+      "core_tools": [
+        "VS Code", "Android Studio", "Xcode", "Expo",
+        "GitHub", "Postman", "Figma", "npm"
+      ],
+      "learning_prerequisites": [
+        "JavaScript programming fundamentals",
+        "Basic understanding of mobile UI conventions (gestures, navigation patterns)",
+        "Familiarity with how REST APIs work",
+        "Introduction to version control with Git"
+      ],
+      "certifications": [
+        {
+          "name": "Meta React Native Specialization",
+          "provider": "Meta / Coursera",
+          "level": "beginner",
+          "url": "https://www.coursera.org/specializations/meta-react-native",
+          "ibm_certified": false,
+          "duration_weeks": 8
+        },
+        {
+          "name": "Flutter and Dart – The Complete Flutter App Development Course",
+          "provider": "Udemy / App Brewery",
+          "level": "beginner",
+          "url": "https://www.udemy.com/course/flutter-bootcamp-with-dart/",
+          "ibm_certified": false,
+          "duration_weeks": 10
+        },
+        {
+          "name": "Google Associate Android Developer",
+          "provider": "Google",
+          "level": "intermediate",
+          "url": "https://developers.google.com/certification/associate-android-developer",
+          "ibm_certified": false,
+          "duration_weeks": 12
+        }
+      ],
+      "suggested_projects": [
+        {
+          "title": "To-Do List Mobile Application",
+          "description": "Build a cross-platform to-do list app using React Native or Flutter with task creation, editing, deletion, completion tracking, and local storage persistence.",
+          "difficulty": "beginner",
+          "skills_demonstrated": ["React Native", "Flutter", "Dart", "JavaScript", "Mobile UI Design"],
+          "estimated_hours": 20
+        },
+        {
+          "title": "News Reader App with API Integration",
+          "description": "Build a mobile news reader app that fetches articles from a public news API, supports category filtering, bookmarking, and push notification support for breaking news.",
+          "difficulty": "intermediate",
+          "skills_demonstrated": ["React Native", "REST API", "JavaScript", "Push Notifications", "Mobile UI Design"],
+          "estimated_hours": 50
+        },
+        {
+          "title": "Social Media Mobile Application",
+          "description": "Develop a feature-rich social media app with user authentication, post creation with media uploads, a real-time feed, comments, likes, and profile management using Firebase.",
+          "difficulty": "advanced",
+          "skills_demonstrated": ["React Native", "Flutter", "REST API", "Mobile Performance Optimization", "Push Notifications", "Mobile UI Design"],
+          "estimated_hours": 110
+        }
+      ],
+      "salary_range": {
+        "currency": "INR",
+        "entry_level_lpa": "4-8",
+        "mid_level_lpa": "10-20",
+        "market": "India",
+        "salary_as_of_year": 2025
+      },
+      "career_stage_path": {
+        "entry_role": "Junior Mobile Developer",
+        "mid_role": "Mobile App Developer",
+        "senior_role": "Senior Mobile Engineer / Mobile Architect"
+      }
+    }
+
+  ]
+}

@@ -1,0 +1,22 @@
+---
+applications:
+  - name: career-counseling-companion
+    memory: 512M
+    instances: 1
+    buildpacks:
+      - python_buildpack
+    command: gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120
+    health-check-type: http
+    health-check-http-endpoint: /api/health
+    env:
+      FLASK_ENV: production
+      LOG_LEVEL: INFO
+      SESSION_LIFETIME_SECONDS: "3600"
+    # Do NOT add secret credentials here.
+    # Set them via:
+    #   ibmcloud cf set-env career-counseling-companion IBM_API_KEY <value>
+    #   ibmcloud cf set-env career-counseling-companion IBM_PROJECT_ID <value>
+    #   ibmcloud cf set-env career-counseling-companion IBM_WATSONX_URL <value>
+    #   ibmcloud cf set-env career-counseling-companion FLASK_SECRET_KEY <value>
+    #   ibmcloud cf set-env career-counseling-companion WATSON_STT_API_KEY <value>  (optional)
+    #   ibmcloud cf set-env career-counseling-companion WATSON_STT_URL <value>      (optional)

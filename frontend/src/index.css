@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #334155;
+  background: #f7f8fb;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(15, 98, 254, 0.18);
+}
+
+@layer base {
+  body {
+    @apply bg-[#f7f8fb] text-slate-700 antialiased transition-colors duration-200 dark:bg-zinc-950 dark:text-zinc-100;
+  }
+
+  button,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button {
+    @apply motion-safe:transition-transform;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}

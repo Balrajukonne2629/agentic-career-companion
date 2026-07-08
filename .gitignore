@@ -1,0 +1,25 @@
+# Frontend / Node.js
+frontend/node_modules/
+frontend/dist/
+
+# Backend / Python
+backend/.venv/
+backend/venv/
+backend/env/
+backend/static/
+backend/.pytest_cache/
+backend/__pycache__/
+backend/routes/__pycache__/
+backend/agents/__pycache__/
+backend/utils/__pycache__/
+*.pyc
+
+# Local Configuration & Secrets
+backend/.env
+.env
+.env.local
+
+# IDEs & System Files
+.vscode/
+.DS_Store
+Thumbs.db

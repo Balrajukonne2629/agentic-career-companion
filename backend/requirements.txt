@@ -1,0 +1,11 @@
+Flask==3.0.3
+flask-cors==4.0.1
+Flask-Session==0.8.0
+python-dotenv==1.0.1
+ibm-watsonx-ai==1.1.2
+gunicorn==22.0.0
+
+# Watson STT (optional — only needed for Watson STT fallback)
+# Install separately if using the STT fallback:
+#   pip install ibm-watson
+# ibm-watson
