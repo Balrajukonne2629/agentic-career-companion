@@ -121,3 +121,4 @@ python -m pytest -v
 * **Build Command:** `pip install -r requirements.txt`
 * **Start Command:** `gunicorn app:app`
 * **Env Variables:** Configure IBM watsonx.ai credentials, `FRONTEND_URL` pointing to your Vercel/Netlify URL, and set `SESSION_COOKIE_SAMESITE=None` to ensure cookie-sharing works.
+* **Important Note:** Specify `PYTHON_VERSION` = `3.11.9` in the Render environment or ensure `backend/runtime.txt` is present to bypass C/C++ compiler requirements when installing packages like `pandas`.
