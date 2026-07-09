@@ -110,6 +110,89 @@ def _fallback_priority(skill: str, student_skills_lc: set) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Per-skill readiness score
+# ---------------------------------------------------------------------------
+
+# Keyword groups that share a conceptual domain.
+# If a student has ANY skill in a group, they get partial credit toward
+# others in the same group.
+_SKILL_DOMAINS: List[List[str]] = [
+    ["python", "pandas", "numpy", "scikit-learn", "matplotlib", "seaborn", "jupyter"],
+    ["tensorflow", "pytorch", "keras", "deep learning", "neural", "transformer"],
+    ["nlp", "natural language processing", "hugging face", "spacy", "nltk", "bert"],
+    ["mlops", "model deployment", "mlflow", "bentoml", "seldon", "kubeflow", "airflow"],
+    ["sql", "mysql", "postgresql", "sqlite", "database", "query"],
+    ["javascript", "typescript", "node.js", "express.js", "react", "vue", "angular", "next.js"],
+    ["html", "css", "sass", "tailwind", "bootstrap", "frontend", "ui"],
+    ["rest api", "graphql", "api", "http", "fetch", "axios"],
+    ["docker", "kubernetes", "ci/cd", "devops", "jenkins", "github actions"],
+    ["aws", "azure", "google cloud", "cloud", "s3", "ec2", "lambda"],
+    ["linux", "bash", "shell", "terminal", "networking"],
+    ["java", "spring", "maven", "gradle", "jvm"],
+    ["c++", "c", "c#", ".net", "unreal"],
+    ["git", "github", "version control", "gitlab"],
+    ["machine learning", "feature engineering", "model evaluation", "scikit", "xgboost"],
+    ["data visualization", "tableau", "power bi", "looker", "matplotlib", "seaborn"],
+    ["data engineering", "etl", "spark", "kafka", "airflow", "dbt", "snowflake"],
+    ["cybersecurity", "penetration testing", "ethical hacking", "owasp", "siem"],
+    ["react native", "flutter", "mobile", "android", "ios", "swift", "kotlin", "dart"],
+    ["figma", "ux", "ui design", "wireframe", "prototype", "usability"],
+    ["system design", "architecture", "microservices", "distributed"],
+]
+
+
+def _related_skill_overlap(skill: str, student_skills_lc: set) -> float:
+    """
+    Return a 0.0-1.0 overlap score:
+    how many skills in the same domain as `skill` does the student already know?
+    """
+    skill_lc = skill.lower()
+    for domain in _SKILL_DOMAINS:
+        if any(kw in skill_lc or skill_lc in kw for kw in domain):
+            known = sum(1 for kw in domain if any(kw in s or s in kw for s in student_skills_lc))
+            overlap = known / max(len(domain), 1)
+            return min(overlap, 1.0)
+    return 0.0
+
+
+_PRIORITY_BASE: Dict[str, int] = {
+    "Critical":   18,   # Student has almost none of the prerequisite knowledge
+    "Important":  42,   # Student has some adjacent knowledge
+    "Beneficial": 62,   # Nice-to-have — student can manage without it
+}
+
+
+def _compute_readiness_score(
+    skill: str,
+    priority: str,
+    student_skills_lc: set,
+    cgpa: float,
+    skill_index: int,
+    total_skills: int,
+) -> int:
+    """
+    Compute a realistic readiness percentage (0-100) for a single gap skill.
+
+    Formula
+    -------
+    base        = priority bucket (Critical 18 / Important 42 / Beneficial 62)
+    overlap     = +0..25 from related skills the student already knows
+    cgpa_bonus  = +0..10 based on CGPA (higher CGPA → picks up skills faster)
+    position    = -0..8 light penalty: harder / less-common skills rank lower
+    jitter      = ±3 deterministic pseudo-randomness to avoid identical values
+    """
+    base = _PRIORITY_BASE.get(priority, 30)
+    overlap = _related_skill_overlap(skill, student_skills_lc)
+    overlap_bonus = round(overlap * 25)
+    cgpa_bonus = round(min(max(cgpa - 5.0, 0) / 5.0, 1.0) * 10)
+    position_penalty = round((skill_index / max(total_skills, 1)) * 8)
+    # Deterministic jitter using character sum so same skill always gets same delta
+    jitter = (sum(ord(c) for c in skill.lower()) % 7) - 3
+    score = base + overlap_bonus + cgpa_bonus - position_penalty + jitter
+    return max(10, min(95, score))
+
+
+# ---------------------------------------------------------------------------
 # Gap summary counter
 # ---------------------------------------------------------------------------
 
@@ -199,22 +282,35 @@ def run(
     student_skills     = student_profile.get("skills", [])
     student_skills_lc  = _normalise_set(student_skills)
 
-    # Step 2 — Prioritise required_gap via Python logic (Skill Gap Agent does NOT call Granite)
+    # Step 2 — Prioritise required_gap via Python logic
     skills_to_learn: List[Dict[str, Any]] = []
-    for skill in gaps["required_gap"]:
+    cgpa = float(student_profile.get("cgpa") or 0.0)
+    all_gap_skills_ordered = gaps["required_gap"] + gaps["beneficial_gap"]
+    total_gap = len(all_gap_skills_ordered)
+
+    for idx, skill in enumerate(gaps["required_gap"]):
         priority = _fallback_priority(skill, student_skills_lc)
+        readiness = _compute_readiness_score(
+            skill, priority, student_skills_lc, cgpa, idx, total_gap
+        )
         skills_to_learn.append({
-            "skill":    skill,
-            "priority": priority,
-            "reason":   f"Required skill for {target_career} not yet in your toolkit.",
+            "skill":           skill,
+            "priority":        priority,
+            "reason":          f"Required skill for {target_career} not yet in your toolkit.",
+            "readiness_score": readiness,
         })
 
     # Append beneficial (nice-to-have) gaps — always "Beneficial" priority
-    for skill in gaps["beneficial_gap"]:
+    for idx, skill in enumerate(gaps["beneficial_gap"]):
+        global_idx = len(gaps["required_gap"]) + idx
+        readiness = _compute_readiness_score(
+            skill, "Beneficial", student_skills_lc, cgpa, global_idx, total_gap
+        )
         skills_to_learn.append({
-            "skill":    skill,
-            "priority": "Beneficial",
-            "reason":   f"Nice-to-have for {target_career} that improves employability.",
+            "skill":           skill,
+            "priority":        "Beneficial",
+            "reason":          f"Nice-to-have for {target_career} that improves employability.",
+            "readiness_score": readiness,
         })
 
     # Step 3 — tools_to_learn (purely deterministic, always "Important")
@@ -229,14 +325,25 @@ def run(
     # Step 4 — Gap summary
     summary = _compute_summary(skills_to_learn, tools_to_learn)
 
+    # Top missing skills sorted by readiness_score ascending (biggest gaps first)
+    critical_and_important = [
+        s for s in skills_to_learn if s["priority"] in ("Critical", "Important")
+    ]
+    top_missing_skills = [
+        s["skill"]
+        for s in sorted(critical_and_important, key=lambda x: x["readiness_score"])
+    ]
+
     result = {
-        "target_career":    target_career,
-        "target_career_id": target_career_id,
+        "target_career":      target_career,
+        "target_career_id":   target_career_id,
         "skills_already_have": gaps["skills_already_have"],
-        "skills_to_learn":  skills_to_learn,
-        "tools_to_learn":   tools_to_learn,
-        "gap_summary":      summary,
+        "skills_to_learn":    skills_to_learn,
+        "tools_to_learn":     tools_to_learn,
+        "top_missing_skills": top_missing_skills,
+        "gap_summary":        summary,
     }
+
 
     # Calculate readiness score deterministically
     cgpa = float(student_profile.get("cgpa") or 0.0)

@@ -198,7 +198,8 @@ Student Profile:
 - Target Career: {target_career}
 - Profile Tier: {profile_tier}
 - Skills Already Have: {skills_have}
-- Skills to Learn (Critical first): {skills_to_learn}
+- Top Missing Skills (biggest gaps, address in this order): {top_missing_skills}
+- All Skills to Learn (Critical first): {skills_to_learn}
 - Availability: {availability} hours per week ({pace} pace — {min_goals}–{max_goals} goals per week)
 - Preferred Learning Style: {learning_style} (use {style_hint})
 
@@ -208,9 +209,10 @@ Instructions:
 - "weekly_goals" must have exactly {weeks_30} sub-arrays for 30-day, {weeks_60} for 60-day, {weeks_90} for 90-day.
 - Each sub-array represents one week's goals — {min_goals} to {max_goals} goal strings per week.
 - "resources" must be 2–4 specific resource names (course names, docs sites, etc.).
-- 30-day: Focus on foundational skills. No projects yet.
-- 60-day: Introduce intermediate skills + first project (provided separately — just reference "work on first project").
-- 90-day: Advanced skills + certifications + portfolio project (provided separately — just reference "complete portfolio project").
+- 30-day: Focus ONLY on the top 2-3 skills from "Top Missing Skills". Use specific skill names in the goal strings (e.g. "Learn TensorFlow fundamentals", not "Learn a framework").
+- 60-day: Cover the next 2-3 skills from "Top Missing Skills" + first project using those skills.
+- 90-day: Advanced skills + certification + portfolio project that demonstrates ALL skills learned.
+- Every weekly goal string MUST name a specific skill, technology, or deliverable from the student's gap list.
 - Do NOT generate certification or project details — those are injected separately.
 - Do NOT add any text outside the JSON object.
 
@@ -239,6 +241,10 @@ def _call_granite_for_roadmap(
     style_hint = _STYLE_HINTS.get(learning_style, _STYLE_HINTS["mixed"])
 
     skills_have = ", ".join(skill_gap.get("skills_already_have", [])) or "none yet"
+
+    # Top missing skills (already sorted by readiness_score ascending = biggest gaps first)
+    top_missing = skill_gap.get("top_missing_skills", [])
+
     critical_skills = [
         s["skill"] for s in skill_gap.get("skills_to_learn", [])
         if s.get("priority") == "Critical"
@@ -248,7 +254,11 @@ def _call_granite_for_roadmap(
         if s.get("priority") == "Important"
     ]
     all_gap_skills = critical_skills + important_skills
-    skills_to_learn_str = ", ".join(all_gap_skills[:8]) or "core fundamentals"
+
+    # Use top_missing if available; fall back to manual sort
+    ordered_gap = top_missing if top_missing else all_gap_skills
+    skills_to_learn_str = ", ".join(ordered_gap[:10]) or "core fundamentals"
+    top_missing_str = ", ".join(ordered_gap[:5]) or "core fundamentals"
 
     # Weeks per phase based on pace
     weeks_30 = min(4, max(2, 4 if pace_label == "slow" else 4))
@@ -260,6 +270,7 @@ def _call_granite_for_roadmap(
         target_career   = target_career,
         profile_tier    = profile_analysis.get("profile_tier", "moderate"),
         skills_have     = skills_have,
+        top_missing_skills = top_missing_str,
         skills_to_learn = skills_to_learn_str,
         availability    = availability,
         pace            = pace_label,
@@ -344,28 +355,34 @@ def _build_fallback_roadmap(
     """
     pace_label, min_goals, max_goals = pace_info
 
-    # Prefer career-specific skill sequences over gap-derived skills
-    career_key = target_career_id.lower().strip()
-    career_title_lc = target_career.lower()
+    # Priority 1: use actual student gap (top_missing_skills already sorted by readiness_score asc)
+    top_missing = skill_gap.get("top_missing_skills", [])
 
-    # Try to match by career_id first, then by title keyword
-    fallback_skills: List[str] = []
-    for key, skills in _CAREER_FALLBACK_SKILLS.items():
-        if key == career_key or key in career_title_lc or any(word in career_title_lc for word in key.split("_")):
-            fallback_skills = skills
-            break
+    if top_missing:
+        fallback_skills = top_missing
+    else:
+        # Priority 2: derive from skills_to_learn sorted by readiness_score ascending
+        ranked = sorted(
+            [s for s in skill_gap.get("skills_to_learn", []) if s["priority"] in ("Critical", "Important")],
+            key=lambda x: x.get("readiness_score", 50),
+        )
+        fallback_skills = [s["skill"] for s in ranked]
 
-    # If no career-specific match, derive from skill gap
+    # Priority 3: career-keyword defaults only if no gap data available
     if not fallback_skills:
-        critical_skills = [
-            s["skill"] for s in skill_gap.get("skills_to_learn", [])
-            if s.get("priority") == "Critical"
-        ]
-        important_skills = [
-            s["skill"] for s in skill_gap.get("skills_to_learn", [])
-            if s.get("priority") == "Important"
-        ]
-        fallback_skills = (critical_skills + important_skills) or _CAREER_FALLBACK_SKILLS["default"]
+        career_key = target_career_id.lower().strip()
+        career_title_lc = target_career.lower()
+        for key, skills in _CAREER_FALLBACK_SKILLS.items():
+            if key == career_key or key in career_title_lc or any(word in career_title_lc for word in key.split("_")):
+                fallback_skills = skills
+                break
+        fallback_skills = fallback_skills or _CAREER_FALLBACK_SKILLS["default"]
+
+    # Determine focus skill names for phase summaries
+    skill_30 = fallback_skills[0] if len(fallback_skills) > 0 else "core fundamentals"
+    skill_31 = fallback_skills[1] if len(fallback_skills) > 1 else skill_30
+    skill_60 = fallback_skills[2] if len(fallback_skills) > 2 else skill_30
+    skill_61 = fallback_skills[3] if len(fallback_skills) > 3 else skill_60
 
     # Distribute skills across weeks (4 weeks per phase)
     def _chunk_goals(skills: List[str], weeks: int, goals_per_week: int) -> List[List[str]]:
@@ -387,27 +404,28 @@ def _build_fallback_roadmap(
 
     return {
         "30_day": {
-            "focus": f"Build foundational skills required for {target_career}.",
+            "focus": f"Master {skill_30} and {skill_31} — your highest-priority gaps for {target_career}.",
             "weekly_goals": _chunk_goals(phase_30_skills or [f"Study {target_career} fundamentals"], 4, max_goals),
-            "resources": ["freeCodeCamp", "MDN Web Docs", "official documentation"],
+            "resources": ["official documentation", "freeCodeCamp", "YouTube tutorials"],
         },
         "60_day": {
-            "focus": f"Deepen intermediate skills and start your first {target_career} project.",
+            "focus": f"Build on {skill_60} and {skill_61}, then start your first {target_career} project.",
             "weekly_goals": _chunk_goals(
-                phase_60_skills or [f"Build project features", "Write tests", "Add documentation"],
+                phase_60_skills or ["Build first project", "Write tests", "Add documentation"],
                 4, max_goals
             ),
-            "resources": ["YouTube tutorials", "The Odin Project", "official documentation"],
+            "resources": ["The Odin Project", "official documentation", "Coursera"],
         },
         "90_day": {
-            "focus": f"Complete certifications and build a portfolio-quality {target_career} project.",
+            "focus": f"Complete remaining {target_career} skills, earn a certification, and build a portfolio project.",
             "weekly_goals": _chunk_goals(
-                [f"Work on portfolio project", "Prepare for certification", "Deploy project", "Write README"],
+                fallback_skills[8 * max_goals:] or ["Work on portfolio project", "Prepare for certification", "Deploy project", "Write README"],
                 4, max_goals
             ),
             "resources": ["IBM SkillsBuild", "Coursera", "official certification guide"],
         },
     }
+
 
 
 # ---------------------------------------------------------------------------

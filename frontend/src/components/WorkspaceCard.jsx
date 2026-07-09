@@ -108,15 +108,24 @@ function normaliseSkillGaps(results) {
 
   if (!skillsToLearn.length) return skillGaps;
 
-  const total = Math.max(skillsToLearn.length + asList(skillGap?.skills_already_have).length, skillsToLearn.length);
-  return skillsToLearn.slice(0, 3).map((item, index) => {
-    const readiness = Math.max(35, Math.min(82, 100 - Math.round(((index + 1) / total) * 55)));
-    return {
-      skill: item.skill || item.tool || 'Skill',
-      level: readiness,
-    };
-  });
+  // Priority fallback scores when backend readiness_score is unavailable
+  const priorityDefault = { Critical: 22, Important: 45, Beneficial: 65 };
+
+  // Sort by readiness_score ascending (lowest first = biggest gap at top)
+  const sorted = [...skillsToLearn]
+    .filter((item) => item.priority !== 'Beneficial')   // show only required gaps
+    .sort((a, b) => {
+      const scoreA = a.readiness_score ?? priorityDefault[a.priority] ?? 40;
+      const scoreB = b.readiness_score ?? priorityDefault[b.priority] ?? 40;
+      return scoreA - scoreB;
+    });
+
+  return sorted.slice(0, 5).map((item) => ({
+    skill: item.skill || item.tool || 'Skill',
+    level: item.readiness_score ?? priorityDefault[item.priority] ?? 40,
+  }));
 }
+
 
 function normaliseRoadmapSteps(results) {
   const roadmap = results?.roadmap;
@@ -238,11 +247,24 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults, roadmapL
             <p className="mt-3 max-w-[68ch] text-base leading-7 text-zinc-600 dark:text-zinc-400">
               A focused summary of your strongest career matches, readiness gaps, and first learning path.
             </p>
+            <p className="mt-2 text-xs text-zinc-400 dark:text-zinc-500">
+              Generated: {new Date().toLocaleString()}
+            </p>
           </div>
           <span className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200/80 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-400">
             <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
             Report Ready
           </span>
+        </div>
+        <div className="hidden print:flex flex-row gap-8 mt-4 border-t border-zinc-200/60 pt-4 dark:border-zinc-800">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Top Match</p>
+            <p className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">{topMatch}%</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Overall Career Readiness Score</p>
+            <p className="mt-1 text-2xl font-bold text-blue-600 dark:text-blue-400">{readiness}%</p>
+          </div>
         </div>
       </header>
 

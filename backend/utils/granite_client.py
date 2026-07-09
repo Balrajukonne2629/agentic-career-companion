@@ -89,6 +89,10 @@ def _get_client() -> APIClient:
 # Core call function
 # ---------------------------------------------------------------------------
 
+# In-memory cache for ModelInference instances to prevent repeated GET model spec overhead
+_model_inference_cache: Dict[str, ModelInference] = {}
+
+
 def _call_granite(
     model_id: str,
     prompt: str,
@@ -124,15 +128,22 @@ def _call_granite(
     attempt = 0
     last_exc: Optional[Exception] = None
 
+    # Construct a cache key based on model configuration
+    cache_key = f"{model_id}:{config.IBM_PROJECT_ID}:{sorted(merged_params.items())}"
+
     while attempt <= MAX_RETRIES:
         try:
-            model = ModelInference(
-                model_id=model_id,
-                api_client=client,
-                project_id=config.IBM_PROJECT_ID,
-                params=merged_params,
-            )
-            
+            if cache_key in _model_inference_cache:
+                model = _model_inference_cache[cache_key]
+            else:
+                model = ModelInference(
+                    model_id=model_id,
+                    api_client=client,
+                    project_id=config.IBM_PROJECT_ID,
+                    params=merged_params,
+                )
+                _model_inference_cache[cache_key] = model
+
             print("-------------------------------------------------")
             print("Granite Call Started")
             print(f"Model name: {model_id}")

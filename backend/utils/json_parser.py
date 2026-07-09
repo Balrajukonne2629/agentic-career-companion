@@ -41,14 +41,33 @@ _FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
 _JSON_START_RE = re.compile(r"[{\[]")
 
 
+def _score_candidate(obj: Any) -> int:
+    """Score a parsed JSON object based on its populated contents."""
+    if not obj:
+        return 0
+    score = 0
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if v:  # key has a value
+                score += 10
+                if isinstance(v, (dict, list)):
+                    score += _score_candidate(v)
+                elif isinstance(v, str) and len(v.strip()) > 0:
+                    score += 5
+    elif isinstance(obj, list):
+        score += len(obj) * 5
+        for item in obj:
+            score += _score_candidate(item)
+    return score
+
+
 def parse_granite_json(raw: str) -> Any:
     """
     Extract and parse a JSON value from a Granite model response string.
 
-    Attempts the following strategies in order:
-    1. Direct json.loads on the stripped raw string.
-    2. Extract content from a markdown code fence and parse.
-    3. Find the first '{' or '[' character and parse from there.
+    Scans the response for all candidate JSON structures (fences, matching brackets)
+    and returns the one with the highest populated content score. This robustly
+    handles cases where the model prints an empty template before outputting the real data.
 
     Parameters
     ----------
@@ -64,7 +83,7 @@ def parse_granite_json(raw: str) -> Any:
     Raises
     ------
     GraniteParseError
-        If all three strategies fail to produce valid JSON.
+        If all parse strategies fail to produce valid JSON.
     """
     if not raw or not raw.strip():
         raise GraniteParseError(
@@ -73,45 +92,49 @@ def parse_granite_json(raw: str) -> Any:
         )
 
     stripped = raw.strip()
-    parsed_value = None
-    success = False
+    candidates = []
 
-    # Strategy 1 — try the raw stripped string directly
-    if not success:
+    # Strategy 1 — Try the raw stripped string directly
+    try:
+        val = json.loads(stripped)
+        candidates.append(val)
+    except json.JSONDecodeError:
+        pass
+
+    # Strategy 2 — Extract from all markdown code fences
+    for match in _FENCE_RE.finditer(stripped):
+        content = match.group(1).strip()
         try:
-            parsed_value = json.loads(stripped)
-            success = True
+            val = json.loads(content)
+            candidates.append(val)
         except json.JSONDecodeError:
             pass
 
-    # Strategy 2 — extract from markdown code fence
-    if not success:
-        fence_match = _FENCE_RE.search(stripped)
-        if fence_match:
-            fence_content = fence_match.group(1).strip()
+    # Strategy 3 — Find all start brackets and parse matching spans
+    start_positions = [m.start() for m in _JSON_START_RE.finditer(stripped)]
+    for pos in start_positions:
+        candidate_str = stripped[pos:]
+        # Try to parse incremental prefixes to find matching closing bracket
+        try:
+            val = json.loads(candidate_str)
+            candidates.append(val)
+        except json.JSONDecodeError as e:
+            # If it failed due to extra trailing characters, try parsing with JSONDecoder.raw_decode
             try:
-                parsed_value = json.loads(fence_content)
-                success = True
+                decoder = json.JSONDecoder()
+                val, _ = decoder.raw_decode(candidate_str)
+                candidates.append(val)
             except json.JSONDecodeError:
                 pass
 
-    # Strategy 3 — find first JSON delimiter and parse from there
-    if not success:
-        start_match = _JSON_START_RE.search(stripped)
-        if start_match:
-            candidate = stripped[start_match.start():]
-            try:
-                parsed_value = json.loads(candidate)
-                success = True
-            except json.JSONDecodeError:
-                pass
-
-    if success:
+    if candidates:
+        # Sort candidates by their population score desc, returning the highest-scored one
+        best_candidate = max(candidates, key=_score_candidate)
         print("-------------------------------------------------")
-        print("Parsed Granite response:")
-        print(json.dumps(parsed_value, indent=2))
+        print(f"Parsed Granite response (selected from {len(candidates)} candidates):")
+        print(json.dumps(best_candidate, indent=2))
         print("-------------------------------------------------")
-        return parsed_value
+        return best_candidate
 
     log.error("All JSON parse strategies failed for Granite response (chars=%d)", len(raw))
     raise GraniteParseError(
@@ -120,3 +143,4 @@ def parse_granite_json(raw: str) -> Any:
         "unexpected output.",
         detail=raw[:500],  # Log first 500 chars for debugging
     )
+
