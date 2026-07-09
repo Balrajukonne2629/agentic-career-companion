@@ -132,6 +132,14 @@ def _call_granite(
                 project_id=config.IBM_PROJECT_ID,
                 params=merged_params,
             )
+            
+            print("-------------------------------------------------")
+            print("Granite Call Started")
+            print(f"Model name: {model_id}")
+            print("Prompt sent:")
+            print(prompt)
+            print("-------------------------------------------------")
+            
             response = model.generate_text(prompt=prompt)
 
             # The SDK returns a plain string from generate_text()
@@ -143,6 +151,13 @@ def _call_granite(
                 )
 
             text = response.strip()
+            
+            print("-------------------------------------------------")
+            print("Granite Call Completed")
+            print("Raw Granite response:")
+            print(text)
+            print("-------------------------------------------------")
+            
             log.debug(
                 "Granite %s | prompt_chars=%d | response_chars=%d",
                 model_id,

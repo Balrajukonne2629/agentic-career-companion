@@ -118,12 +118,36 @@ function normaliseSkillGaps(results) {
 
 function normaliseRoadmapSteps(results) {
   const roadmap = results?.roadmap;
+
+  // DEBUG: Roadmap data inspection
+  console.group('%c🗺 normaliseRoadmapSteps() — roadmap data inspection', 'color: #FF9800; font-weight: bold;');
+  console.log('results.roadmap value:', roadmap);
+  console.log('results.roadmap type:', typeof roadmap);
+  if (!roadmap) {
+    console.warn('⚠️ results.roadmap is null/undefined — will use MOCK data (roadmapSteps)');
+  } else {
+    console.log('30_day:', roadmap['30_day']);
+    console.log('60_day:', roadmap['60_day']);
+    console.log('90_day:', roadmap['90_day']);
+    const focuses = ['30_day', '60_day', '90_day'].map((k) => ({ phase: k, focus: roadmap[k]?.focus ?? '⚠️ missing' }));
+    console.table(focuses);
+  }
+  console.groupEnd();
+
   if (!roadmap) return roadmapSteps;
 
-  return ['30_day', '60_day', '90_day']
+  const steps = ['30_day', '60_day', '90_day']
     .map((key) => roadmap[key]?.focus)
     .filter(Boolean)
     .slice(0, 3);
+
+  if (steps.length === 0) {
+    console.warn('⚠️ normaliseRoadmapSteps: roadmap exists but NO focus strings found — will use MOCK data');
+    return roadmapSteps;
+  }
+
+  console.log('%c✅ normaliseRoadmapSteps: returning real roadmap steps:', 'color:#4CAF50;', steps);
+  return steps;
 }
 
 function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
@@ -136,6 +160,22 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
   const readiness =
     pipelineResults?.profileAnalysis?.career_readiness_score ??
     Math.round(reportSkillGaps.reduce((total, item) => total + item.level, 0) / reportSkillGaps.length);
+
+  // DEBUG: Full pipeline results at dashboard render time
+  console.group('%c📊 DashboardReport mounted — full pipelineResults inspection', 'color: #2196F3; font-weight: bold; font-size: 14px;');
+  console.log('pipelineResults (full object):', pipelineResults);
+  console.table([
+    { key: 'validation', present: !!pipelineResults?.validation, type: typeof pipelineResults?.validation },
+    { key: 'profileAnalysis', present: !!pipelineResults?.profileAnalysis, type: typeof pipelineResults?.profileAnalysis },
+    { key: 'recommendations', present: !!pipelineResults?.recommendations, type: typeof pipelineResults?.recommendations, length: pipelineResults?.recommendations?.length },
+    { key: 'skillGap', present: !!pipelineResults?.skillGap, type: typeof pipelineResults?.skillGap },
+    { key: 'roadmap', present: !!pipelineResults?.roadmap, type: typeof pipelineResults?.roadmap },
+  ]);
+  console.log('reportRoadmapSteps (what will render):', reportRoadmapSteps);
+  if (!pipelineResults?.roadmap) {
+    console.warn('⚠️ pipelineResults.roadmap is null/undefined — Roadmap section will show MOCK data');
+  }
+  console.groupEnd();
 
   const handleExportReport = () => {
     window.print();

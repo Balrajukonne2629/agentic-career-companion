@@ -73,30 +73,45 @@ def parse_granite_json(raw: str) -> Any:
         )
 
     stripped = raw.strip()
+    parsed_value = None
+    success = False
 
     # Strategy 1 — try the raw stripped string directly
-    try:
-        return json.loads(stripped)
-    except json.JSONDecodeError:
-        pass
+    if not success:
+        try:
+            parsed_value = json.loads(stripped)
+            success = True
+        except json.JSONDecodeError:
+            pass
 
     # Strategy 2 — extract from markdown code fence
-    fence_match = _FENCE_RE.search(stripped)
-    if fence_match:
-        fence_content = fence_match.group(1).strip()
-        try:
-            return json.loads(fence_content)
-        except json.JSONDecodeError:
-            pass
+    if not success:
+        fence_match = _FENCE_RE.search(stripped)
+        if fence_match:
+            fence_content = fence_match.group(1).strip()
+            try:
+                parsed_value = json.loads(fence_content)
+                success = True
+            except json.JSONDecodeError:
+                pass
 
     # Strategy 3 — find first JSON delimiter and parse from there
-    start_match = _JSON_START_RE.search(stripped)
-    if start_match:
-        candidate = stripped[start_match.start():]
-        try:
-            return json.loads(candidate)
-        except json.JSONDecodeError:
-            pass
+    if not success:
+        start_match = _JSON_START_RE.search(stripped)
+        if start_match:
+            candidate = stripped[start_match.start():]
+            try:
+                parsed_value = json.loads(candidate)
+                success = True
+            except json.JSONDecodeError:
+                pass
+
+    if success:
+        print("-------------------------------------------------")
+        print("Parsed Granite response:")
+        print(json.dumps(parsed_value, indent=2))
+        print("-------------------------------------------------")
+        return parsed_value
 
     log.error("All JSON parse strategies failed for Granite response (chars=%d)", len(raw))
     raise GraniteParseError(

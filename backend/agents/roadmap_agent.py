@@ -270,15 +270,33 @@ def _call_granite_for_roadmap(
 
         parsed = parse_granite_json(raw)
 
+        print("-------------------------------------------------")
+        print("Parsed Granite Response (roadmap):")
+        import json as _json
+        try:
+            print(_json.dumps(parsed, indent=2, default=str))
+        except Exception:
+            print(parsed)
+        print("-------------------------------------------------")
+
         if not isinstance(parsed, dict):
             log.warning("Roadmap Agent: Granite returned non-dict — using fallback.")
+            print("[PARSE RESULT] Granite returned non-dict type:", type(parsed).__name__, "— using fallback.")
             return None
 
         # Validate presence of all three phases
         for phase in ("30_day", "60_day", "90_day"):
             if phase not in parsed or not isinstance(parsed[phase], dict):
                 log.warning("Roadmap Agent: missing phase '%s' in Granite output — fallback.", phase)
+                print(f"[PARSE RESULT] Missing or invalid phase '{phase}' in Granite output — using fallback.")
                 return None
+
+        print("[PARSE RESULT] All three phases present. Granite roadmap accepted.")
+        for phase in ("30_day", "60_day", "90_day"):
+            focus = parsed[phase].get("focus", "⚠️ MISSING")
+            goals_count = len(parsed[phase].get("weekly_goals", []))
+            resources_count = len(parsed[phase].get("resources", []))
+            print(f"  {phase}: focus='{focus}' | weekly_goals weeks={goals_count} | resources={resources_count}")
 
         log.info("Roadmap Agent: Granite roadmap generated successfully.")
         return parsed
@@ -467,6 +485,30 @@ def run(
         "60_day":                 phase_60,
         "90_day":                 phase_90,
     }
+
+    # Final result structure debug log
+    print("==================================================")
+    print("ROADMAP AGENT — FINAL RESULT STRUCTURE")
+    print("==================================================")
+    print(f"  target_career: {result['target_career']}")
+    print(f"  profile_tier: {result['profile_tier']}")
+    print(f"  availability_per_week: {result['availability_per_week']}")
+    print(f"  preferred_learning_style: {result['preferred_learning_style']}")
+    for phase_key in ("30_day", "60_day", "90_day"):
+        ph = result[phase_key]
+        focus = ph.get("focus", "⚠️ MISSING")
+        goals = ph.get("weekly_goals", [])
+        resources = ph.get("resources", [])
+        extra_keys = [k for k in ph.keys() if k not in ("focus", "weekly_goals", "resources")]
+        print(f"  {phase_key}:")
+        print(f"    focus: '{focus}'")
+        print(f"    weekly_goals: {len(goals)} week(s) defined")
+        print(f"    resources: {resources}")
+        if extra_keys:
+            print(f"    extra_keys: {extra_keys}")
+    print("==================================================")
+    print("(Frontend normaliseRoadmapSteps reads results.roadmap['30_day'].focus etc.)")
+    print("==================================================")
 
     log.info("Roadmap Agent: complete for '%s'", student_profile.get("name"))
     return result

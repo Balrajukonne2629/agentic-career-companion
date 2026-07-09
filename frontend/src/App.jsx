@@ -100,8 +100,56 @@ function App() {
         })),
       );
 
+      // Log step start and stage transitions
+      if (index > 0) {
+        console.log('%c↓', 'font-size: 16px; font-weight: bold; color: #757575;');
+      }
+      let stepName = step.key.toUpperCase();
+      if (step.key === 'validation') stepName = 'VALIDATE';
+      if (step.key === 'skillgap') stepName = 'SKILL GAP';
+      if (step.key === 'roadmap') stepName = 'ROADMAP';
+
+      console.group(`%c${stepName} - Entered`, 'font-size: 14px; font-weight: bold; color: #2196F3;');
+      
+      let inputPayload = {};
+      if (step.key === 'validation') {
+        inputPayload = {
+          transcript,
+          partialProfile: workingResults.validation?.partial_profile || null
+        };
+      } else if (step.key === 'profile') {
+        inputPayload = { studentProfile: workingResults.validation?.profile };
+      } else if (step.key === 'career') {
+        inputPayload = {
+          studentProfile: workingResults.validation?.profile,
+          profileAnalysis: workingResults.profileAnalysis
+        };
+      } else if (step.key === 'skillgap') {
+        inputPayload = {
+          studentProfile: workingResults.validation?.profile,
+          recommendations: workingResults.recommendations
+        };
+      } else if (step.key === 'roadmap') {
+        inputPayload = {
+          studentProfile: workingResults.validation?.profile,
+          profileAnalysis: workingResults.profileAnalysis,
+          skillGap: workingResults.skillGap,
+          recommendations: workingResults.recommendations
+        };
+      }
+      console.log('Input Payload (Entering Stage):', inputPayload);
+      if (inputPayload.studentProfile) {
+        console.log('Student Profile Table:');
+        console.table(inputPayload.studentProfile);
+      }
+      console.groupEnd();
+
       try {
         const result = await step.run({ transcript, results: workingResults });
+
+        console.group(`%c${stepName} - Completed`, 'font-size: 12px; font-weight: bold; color: #4CAF50;');
+        console.log('Output Payload (Leaving Stage):', result);
+        console.groupEnd();
 
         if (step.key === 'validation' && result?.status && result.status !== 'complete') {
           throw {
@@ -124,6 +172,9 @@ function App() {
           ),
         );
       } catch (error) {
+        console.group(`%c${stepName} - Failed`, 'font-size: 12px; font-weight: bold; color: #F44336;');
+        console.error('Error in step:', error);
+        console.groupEnd();
         if (step.key === 'validation' && error.data?.status === 'incomplete') {
           const result = error.data;
           workingResults['validation'] = result;
