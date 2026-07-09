@@ -85,11 +85,11 @@ export const pipelinePreviewStages = [
 ];
 
 export const pipelineMockSnippets = {
-  validation: '3 core profile fields extracted from the introduction.',
-  profile: 'Profile Analysis: 3 skills detected, 2nd-year IT student.',
-  career: 'Career Recommendation: 3 paths ranked by fit.',
-  skillgap: 'Skill Gap Analysis: 4 required skills remain.',
-  roadmap: 'Roadmap Generation: 30/60/90-day plan prepared.',
+  validation: 'Profile successfully analyzed.',
+  profile: 'Career readiness profile generated.',
+  career: 'Career recommendations generated.',
+  skillgap: 'Skill gap analysis complete.',
+  roadmap: 'Personalized roadmap generated.',
 };
 
 export const loadingMockStages = [
@@ -145,7 +145,7 @@ export const dashboardPreviewCards = [
 
 export const MIN_SPEAK_CHARS = 110;
 export const MIN_WRITE_CHARS = 90;
-export const MAX_WRITE_CHARS = 420;
+export const MAX_WRITE_CHARS = 1500;
 
 export const STORAGE_KEYS = {
   mode: 'acc.mode',

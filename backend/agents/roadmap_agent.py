@@ -68,6 +68,25 @@ _STYLE_HINTS: Dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
+# Career-specific fallback skill sequences
+# Used when Granite is unavailable — maps career_id / title keywords → steps
+# ---------------------------------------------------------------------------
+
+_CAREER_FALLBACK_SKILLS: Dict[str, List[str]] = {
+    "ml_engineer":         ["Python", "TensorFlow", "PyTorch", "scikit-learn", "MLOps", "Model Deployment", "Data Pipelines", "Model Evaluation"],
+    "data_scientist":      ["Python", "Pandas", "NumPy", "Statistics", "Machine Learning", "Data Visualization", "SQL", "Jupyter Notebooks"],
+    "data_analyst":        ["SQL", "Excel", "Power BI", "Tableau", "Data Visualization", "Python", "Statistical Analysis", "Dashboard Design"],
+    "backend_developer":   ["REST APIs", "Databases", "Authentication", "Docker", "Deployment", "System Design", "Caching", "Microservices"],
+    "frontend_developer":  ["HTML/CSS", "JavaScript", "React", "TypeScript", "State Management", "Testing", "Accessibility", "Performance Optimization"],
+    "fullstack_developer": ["React", "Node.js", "REST APIs", "Databases", "Authentication", "Docker", "Deployment", "System Design"],
+    "devops_engineer":     ["Linux", "Docker", "Kubernetes", "CI/CD Pipelines", "Terraform", "Monitoring", "Cloud Platforms", "Security"],
+    "cloud_architect":     ["Cloud Platforms", "Networking", "Security", "Microservices", "Serverless", "Cost Optimization", "IaC", "Multi-Cloud"],
+    "cybersecurity":       ["Networking", "Linux", "Ethical Hacking", "OWASP", "Penetration Testing", "SIEM Tools", "Incident Response", "Compliance"],
+    "mobile_developer":    ["React Native", "Flutter", "REST APIs", "State Management", "App Store Deployment", "Performance", "UI/UX", "Push Notifications"],
+    "default":             ["Core Fundamentals", "Version Control (Git)", "Problem Solving", "Project Building", "Documentation", "Testing", "Deployment", "Portfolio"],
+}
+
+# ---------------------------------------------------------------------------
 # Availability → pace table
 # ---------------------------------------------------------------------------
 
@@ -314,23 +333,39 @@ def _build_fallback_roadmap(
     skill_gap: Dict[str, Any],
     target_career: str,
     pace_info: Tuple[str, int, int],
+    target_career_id: str = "",
 ) -> Dict[str, Any]:
     """
     Build a deterministic roadmap without Granite.
 
     Used when the Granite call fails or returns malformed output.
+    Uses career-specific skill sequences when available, falls back to
+    skill-gap data otherwise.
     """
     pace_label, min_goals, max_goals = pace_info
 
-    critical_skills = [
-        s["skill"] for s in skill_gap.get("skills_to_learn", [])
-        if s.get("priority") == "Critical"
-    ]
-    important_skills = [
-        s["skill"] for s in skill_gap.get("skills_to_learn", [])
-        if s.get("priority") == "Important"
-    ]
-    all_gap = critical_skills + important_skills
+    # Prefer career-specific skill sequences over gap-derived skills
+    career_key = target_career_id.lower().strip()
+    career_title_lc = target_career.lower()
+
+    # Try to match by career_id first, then by title keyword
+    fallback_skills: List[str] = []
+    for key, skills in _CAREER_FALLBACK_SKILLS.items():
+        if key == career_key or key in career_title_lc or any(word in career_title_lc for word in key.split("_")):
+            fallback_skills = skills
+            break
+
+    # If no career-specific match, derive from skill gap
+    if not fallback_skills:
+        critical_skills = [
+            s["skill"] for s in skill_gap.get("skills_to_learn", [])
+            if s.get("priority") == "Critical"
+        ]
+        important_skills = [
+            s["skill"] for s in skill_gap.get("skills_to_learn", [])
+            if s.get("priority") == "Important"
+        ]
+        fallback_skills = (critical_skills + important_skills) or _CAREER_FALLBACK_SKILLS["default"]
 
     # Distribute skills across weeks (4 weeks per phase)
     def _chunk_goals(skills: List[str], weeks: int, goals_per_week: int) -> List[List[str]]:
@@ -347,8 +382,8 @@ def _build_fallback_roadmap(
             chunks.append(week_goals)
         return chunks
 
-    phase_30_skills = all_gap[:4 * max_goals]
-    phase_60_skills = all_gap[4 * max_goals:8 * max_goals]
+    phase_30_skills = fallback_skills[:4 * max_goals]
+    phase_60_skills = fallback_skills[4 * max_goals:8 * max_goals]
 
     return {
         "30_day": {
@@ -448,9 +483,11 @@ def run(
         pace_info,
     )
 
-    if granite_roadmap is None:
+    granite_used = granite_roadmap is not None
+
+    if not granite_used:
         granite_roadmap = _build_fallback_roadmap(
-            student_profile, skill_gap, target_career, pace_info
+            student_profile, skill_gap, target_career, pace_info, target_career_id
         )
         log.info("Roadmap Agent: using fallback roadmap.")
 
@@ -481,6 +518,7 @@ def run(
         "profile_tier":           profile_tier,
         "availability_per_week":  availability,
         "preferred_learning_style": learning_style,
+        "granite_status":         "granite" if granite_used else "fallback",
         "30_day":                 phase_30,
         "60_day":                 phase_60,
         "90_day":                 phase_90,

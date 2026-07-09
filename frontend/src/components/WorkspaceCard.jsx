@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  AlertTriangle,
   Briefcase,
   CheckCircle2,
   Download,
   Gauge,
+  Loader2,
   Map,
   RefreshCcw,
   Target,
@@ -150,7 +152,7 @@ function normaliseRoadmapSteps(results) {
   return steps;
 }
 
-function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
+function DashboardReport({ reducedMotion, onRetryStep, pipelineResults, roadmapLoading = false }) {
   const [activeSection, setActiveSection] = useState('career');
   const reportCareerMatches = useMemo(() => normaliseCareerMatches(pipelineResults), [pipelineResults]);
   const reportProfileSummary = useMemo(() => normaliseProfileSummary(pipelineResults), [pipelineResults]);
@@ -160,6 +162,20 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
   const readiness =
     pipelineResults?.profileAnalysis?.career_readiness_score ??
     Math.round(reportSkillGaps.reduce((total, item) => total + item.level, 0) / reportSkillGaps.length);
+
+  // Determine Granite status from backend response
+  const graniteStatus = pipelineResults?.roadmap?.granite_status; // 'granite' | 'fallback' | undefined
+  const roadmapIsFallback = graniteStatus === 'fallback';
+  const roadmapIsAvailable = !!pipelineResults?.roadmap && reportRoadmapSteps.length > 0;
+
+  // Status badge config
+  const graniteBadge = roadmapLoading
+    ? { dot: 'bg-blue-400 animate-pulse', text: 'text-blue-600 dark:text-blue-400', label: 'Generating…' }
+    : graniteStatus === 'granite'
+      ? { dot: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', label: '🟢 Granite Active' }
+      : graniteStatus === 'fallback'
+        ? { dot: 'bg-amber-400', text: 'text-amber-600 dark:text-amber-400', label: '🟡 Fallback Mode' }
+        : { dot: 'bg-rose-500', text: 'text-rose-600 dark:text-rose-400', label: '🔴 Service Unavailable' };
 
   // DEBUG: Full pipeline results at dashboard render time
   console.group('%c📊 DashboardReport mounted — full pipelineResults inspection', 'color: #2196F3; font-weight: bold; font-size: 14px;');
@@ -363,12 +379,20 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
             </div>
 
             <div id="roadmap" className="scroll-mt-20 rounded-3xl border border-zinc-200/90 bg-white/92 p-5 shadow-md backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-900 dark:shadow-glass">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:flex-col md:items-start xl:flex-row xl:items-center">
+              {/* Card header with status badge */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between md:flex-col md:items-start xl:flex-row xl:items-start">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">
                     <Map className="h-5 w-5" aria-hidden="true" />
                   </div>
-                  <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Roadmap Steps</h2>
+                  <div>
+                    <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Roadmap Steps</h2>
+                    {/* Granite status badge */}
+                    <span className={`mt-0.5 flex items-center gap-1.5 text-xs font-semibold ${graniteBadge.text}`}>
+                      <span className={`inline-block h-1.5 w-1.5 rounded-full ${graniteBadge.dot}`} />
+                      {graniteBadge.label}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -379,14 +403,55 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
                   Rebuild
                 </button>
               </div>
-              <div className="mt-5 space-y-4">
-                {reportRoadmapSteps.map((step, index) => (
-                  <div key={step} className="flex gap-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-xs font-semibold text-white dark:bg-white dark:text-zinc-950">{index + 1}</span>
-                    <span>{step}</span>
+
+              {/* STATE 1 — Loading */}
+              {roadmapLoading ? (
+                <div className="mt-6 flex flex-col items-center gap-4 py-8 text-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500 dark:text-blue-400" aria-hidden="true" />
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">Generating personalized roadmap…</p>
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Powered by IBM Granite</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : roadmapIsAvailable ? (
+                /* STATE 2 — Success */
+                <div className="mt-5 space-y-4">
+                  {roadmapIsFallback && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                      Generated using fallback planner
+                    </p>
+                  )}
+                  {reportRoadmapSteps.map((step, index) => (
+                    <div key={step} className="flex gap-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-950 text-xs font-semibold text-white dark:bg-white dark:text-zinc-950">{index + 1}</span>
+                      <span>{step}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* STATE 3 — Fallback / Service Unavailable */
+                <div className="mt-5 rounded-2xl border border-amber-200/80 bg-amber-50/60 p-5 dark:border-amber-400/20 dark:bg-amber-400/8">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500 dark:text-amber-400" aria-hidden="true" />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                        IBM Granite is currently busy.
+                      </p>
+                      <p className="mt-1.5 text-sm leading-6 text-amber-700 dark:text-amber-400">
+                        Your profile has been successfully analyzed, but roadmap generation is temporarily unavailable. Please try again in a few moments.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => onRetryStep(4)}
+                        className="mt-4 inline-flex min-h-9 items-center gap-2 rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-semibold text-amber-700 transition duration-200 ease-out hover:bg-amber-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:border-amber-400/30 dark:bg-zinc-950 dark:text-amber-400 dark:hover:bg-amber-400/10"
+                      >
+                        <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                        Retry Roadmap
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </div>
@@ -479,8 +544,10 @@ function WorkspaceCard({
     [pipelineRows],
   );
 
+
   if (screen === 'dashboard') {
-    return <DashboardReport reducedMotion={reducedMotion} onRetryStep={onRetryStep} pipelineResults={pipelineResults} />;
+    const roadmapLoading = pipelineRows.some((r) => r.key === 'roadmap' && r.state === 'active');
+    return <DashboardReport reducedMotion={reducedMotion} onRetryStep={onRetryStep} pipelineResults={pipelineResults} roadmapLoading={roadmapLoading} />;
   }
 
   const currentPanel =

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AmbientBackground from './components/AmbientBackground';
 import Footer from './components/Footer';
 import PipelinePreview from './components/PipelinePreview';
@@ -51,6 +51,22 @@ function App() {
   const [errorIndex, setErrorIndex] = useState(null);
   const [lastTranscript, setLastTranscript] = useState('');
   const [pipelineResults, setPipelineResults] = useState(() => createEmptyResults());
+  const [toasts, setToasts] = useState([]);
+  const toastTimers = useRef([]);
+
+  const showToast = useCallback((message, type = 'success') => {
+    const id = Date.now() + Math.random();
+    setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
+    const timer = setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+    toastTimers.current.push(timer);
+  }, []);
+
+  useEffect(() => {
+    const timers = toastTimers.current;
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -146,6 +162,16 @@ function App() {
 
       try {
         const result = await step.run({ transcript, results: workingResults });
+
+        // Success toast per step
+        const successMessages = {
+          validation: 'Profile successfully analyzed',
+          profile:    'Career readiness profile generated',
+          career:     'Career recommendations generated',
+          skillgap:   'Skill gap analysis complete',
+          roadmap:    'Personalized roadmap generated',
+        };
+        if (successMessages[step.key]) showToast(successMessages[step.key]);
 
         console.group(`%c${stepName} - Completed`, 'font-size: 12px; font-weight: bold; color: #4CAF50;');
         console.log('Output Payload (Leaving Stage):', result);
@@ -306,6 +332,34 @@ function App() {
       </main>
 
       <Footer />
+
+      {/* Toast notifications */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
+        className="pointer-events-none fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2 print:hidden"
+      >
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-xl transition-all duration-300 dark:border-emerald-400/20 dark:bg-zinc-900/95"
+            style={{ animation: 'toast-in 0.22s ease-out' }}
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white text-xs">
+              ✓
+            </span>
+            <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{toast.message}</p>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes toast-in {
+          from { opacity: 0; transform: translateY(8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
