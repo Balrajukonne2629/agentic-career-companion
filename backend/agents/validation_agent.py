@@ -127,13 +127,42 @@ def run(
     """
     log.info("ValidationAgent.run | transcript_chars=%d", len(transcript))
 
-    # Print REQUEST RECEIVED stage log
+    # Print VALIDATION AGENT START log
     print("==================================================")
-    print("REQUEST RECEIVED")
+    print("VALIDATION AGENT START")
     print("==================================================")
-    print("User Input:")
+    print()
+    print("Transcript:")
     print(transcript)
     print()
+    print("Transcript Length:")
+    print(len(transcript))
+    print()
+    print("==================================================")
+
+    # Perform ARCHITECTURE AUDIT check on ourselves (excluding comments/audit code itself)
+    disallowed_calls = ["call_granite_fast(", "call_granite_strong(", "generate_text(", "ModelInference("]
+    mismatches = []
+    try:
+        import os
+        file_path = os.path.abspath(__file__)
+        with open(file_path, "r", encoding="utf-8") as f:
+            for idx, line in enumerate(f, 1):
+                clean = line.strip()
+                if clean.startswith("#") or "disallowed_calls =" in clean or "mismatches.append" in clean or "for call in disallowed_calls" in clean:
+                    continue
+                for call in disallowed_calls:
+                    if call in clean:
+                        mismatches.append((idx, clean))
+    except Exception:
+        pass
+
+    if mismatches:
+        print("[ARCHITECTURE MISMATCH]")
+        print("Validation Agent should not use Granite.")
+        for idx, line in mismatches:
+            print(f"Line {idx}: {line}")
+        print()
 
     # Step 1 — Regex extraction only (Validation Agent does NOT call Granite)
     extracted = _regex_extract(transcript)
@@ -150,45 +179,78 @@ def run(
     # Step 5 — Pass-2: Python gap detection on 7 hard-required fields
     missing = _detect_missing(merged)
 
-    status = "incomplete" if missing else "complete"
+    status = "INCOMPLETE" if missing else "COMPLETE"
 
-    # Print VALIDATION AGENT stage log
-    print("==================================================")
-    print("VALIDATION AGENT")
-    print("==================================================")
+    # Print every extraction step:
     print("Extracted Name:")
     print(merged.get("name"))
     print()
+    print("Extracted Education Year:")
+    print(merged.get("year"))
+    print()
+    print("Extracted CGPA:")
+    print(merged.get("cgpa"))
+    print()
     print("Extracted Skills:")
-    print(merged.get("skills", []))
+    print(merged.get("skills"))
+    print()
+    print("Extracted Career Goal:")
+    print(merged.get("career_goal"))
     print()
     print("Missing Fields:")
     print(missing)
     print()
-    print("Validation Status:")
-    print(status)
-    print()
+    print("==================================================")
 
     if missing:
         log.info(
             "ValidationAgent: incomplete profile | missing=%s", missing
         )
-        return {
+        payload = {
             "status": "incomplete",
             "missing_fields": missing,
             "missing_labels": {f: HARD_REQUIRED[f] for f in missing},
             "partial_profile": merged,
         }
+        
+        # Before returning:
+        print("Validation Status:")
+        print("INCOMPLETE")
+        print()
+        print("Returned Payload:")
+        print(json.dumps(payload, indent=2))
+        print()
+        print("==================================================")
+        print("VALIDATION AGENT END")
+        print("==================================================")
+        return payload
 
     # Step 6 — Enforce session schema invariants before writing
-    _enforce_invariants(merged)
+    try:
+        _enforce_invariants(merged)
+        payload = {"status": "complete", "profile": merged}
+        ret_status = "COMPLETE"
+    except Exception as e:
+        payload = {"status": "error", "message": str(e), "fallback": True}
+        ret_status = "ERROR"
 
     log.info(
         "ValidationAgent: complete profile | name=%s skills=%d",
         merged.get("name"),
         len(merged.get("skills", [])),
     )
-    return {"status": "complete", "profile": merged}
+
+    # Before returning:
+    print("Validation Status:")
+    print(ret_status)
+    print()
+    print("Returned Payload:")
+    print(json.dumps(payload, indent=2))
+    print()
+    print("==================================================")
+    print("VALIDATION AGENT END")
+    print("==================================================")
+    return payload
 
 
 
