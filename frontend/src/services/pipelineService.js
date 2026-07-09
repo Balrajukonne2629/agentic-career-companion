@@ -28,7 +28,7 @@ export const pipelineApi = {
 };
 
 export const pipelineSteps = [
-  { key: 'validation', resultKey: 'validation', run: ({ transcript }) => pipelineApi.validate(transcript) },
+  { key: 'validation', resultKey: 'validation', run: ({ transcript, results }) => pipelineApi.validate(transcript, results?.validation?.partial_profile) },
   { key: 'profile', resultKey: 'profileAnalysis', run: () => pipelineApi.profile() },
   { key: 'career', resultKey: 'recommendations', run: () => pipelineApi.recommend() },
   { key: 'skillgap', resultKey: 'skillGap', run: () => pipelineApi.skillgap() },

@@ -427,6 +427,7 @@ function WorkspaceCard({
   pipelineResults,
   onStartPipeline,
   onRetryStep,
+  onSubmitIncomplete,
   onSimulateError,
   draft,
   setDraft,
@@ -468,7 +469,7 @@ function WorkspaceCard({
 
   const currentPanel =
     screen === 'pipeline' ? (
-      <PipelineProgress rows={pipelineRows} onRetry={onRetryStep} onSimulateError={onSimulateError} />
+      <PipelineProgress rows={pipelineRows} onRetry={onRetryStep} onSimulateError={onSimulateError} onSubmitIncomplete={onSubmitIncomplete} />
     ) : mode === 'speak' ? (
       <SpeakMode onContinue={onStartPipeline} onFallback={() => handleModeChange('write')} reducedMotion={reducedMotion} />
     ) : (

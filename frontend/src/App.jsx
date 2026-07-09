@@ -124,6 +124,28 @@ function App() {
           ),
         );
       } catch (error) {
+        if (step.key === 'validation' && error.data?.status === 'incomplete') {
+          const result = error.data;
+          workingResults['validation'] = result;
+          setPipelineResults({ ...workingResults });
+          setActiveIndex(null);
+          setPipelineRows((currentRows) =>
+            currentRows.map((row, rowIndex) =>
+              rowIndex === index
+                ? {
+                    ...row,
+                    state: 'incomplete',
+                    snippet: 'Some required profile fields are missing.',
+                    missingFields: result.missing_fields,
+                    missingLabels: result.missing_labels,
+                    partialProfile: result.partial_profile,
+                  }
+                : row,
+            ),
+          );
+          return;
+        }
+
         const message = getErrorMessage(error);
         setErrorIndex(index);
         setActiveIndex(null);
@@ -168,6 +190,23 @@ function App() {
     void runPipelineFrom(index, lastTranscript, nextResults);
   };
 
+  const handleSubmitIncomplete = (missingValues) => {
+    if (!lastTranscript) return;
+
+    const answerParts = Object.entries(missingValues)
+      .filter(([_, val]) => val && String(val).trim() !== '')
+      .map(([field, val]) => `My ${field.replace(/_/g, ' ')} is ${String(val).trim()}`);
+
+    if (answerParts.length === 0) return;
+
+    const appendedText = answerParts.join('. ') + '.';
+    const newTranscript = `${lastTranscript} ${appendedText}`;
+    setLastTranscript(newTranscript);
+
+    // Re-run validation (index 0) with the new transcript
+    void runPipelineFrom(0, newTranscript, pipelineResults);
+  };
+
   const handleSimulateError = (index) => {
     setPipelineRows((currentRows) =>
       currentRows.map((row, currentIndex) =>
@@ -203,6 +242,7 @@ function App() {
           pipelineResults={pipelineResults}
           onStartPipeline={handleStartPipeline}
           onRetryStep={handleRetryStep}
+          onSubmitIncomplete={handleSubmitIncomplete}
           onSimulateError={handleSimulateError}
           draft={draft}
           setDraft={setDraft}
