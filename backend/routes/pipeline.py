@@ -8,6 +8,8 @@ and return the corresponding agent output as JSON.
 """
 
 import datetime
+import json as _json
+import traceback
 from typing import Any, Dict
 
 from flask import Blueprint, jsonify, request, session
@@ -174,14 +176,107 @@ def profile():
 
     Runs Profile Agent on student_profile.
     """
+    # ------------------------------------------------------------------
+    # STEP 1 - Request received
+    # ------------------------------------------------------------------
+    print("")
+    print("=================================================")
+    print("===== PROFILE ROUTE START =====")
+    print("=================================================")
+    print(f"Timestamp: {datetime.datetime.utcnow().isoformat()}Z")
+    print("")
+    print("--- Request Headers ---")
+    for header_key, header_val in request.headers:
+        print(f"  {header_key}: {header_val}")
+    print("")
+    print("--- Request Body Raw (bytes) ---")
+    raw_bytes = request.get_data()
+    print(repr(raw_bytes))
+    print("")
+    print("--- Request JSON (parsed) ---")
+    try:
+        raw_json = request.get_json(silent=True, force=True)
+        print(_json.dumps(raw_json, indent=2, default=str))
+    except Exception as _parse_exc:
+        print(f"  [Could not parse JSON: {_parse_exc}]")
+        raw_json = None
+    print("")
+    print("--- SESSION CONTENTS ---")
+    print("  dict(session):", dict(session))
+    print("  student_profile (from session):", session.get("student_profile"))
+    print("=================================================")
+    print("STEP 1 - Request received")
+    print("=================================================")
+    print("")
+
     try:
         body = request.get_json(silent=True) or {}
         _log_route_start("/api/profile", body)
+
+        # --------------------------------------------------------------
+        # STEP 2 - Profile extracted
+        # --------------------------------------------------------------
+        print("=================================================")
+        print("STEP 2 - Profile extracted")
+        print("=================================================")
+        print("  student_profile key present in body:", "student_profile" in body)
+        print("  student_profile from request.json:")
+        sp_from_body = body.get("student_profile")
+        try:
+            print(_json.dumps(sp_from_body, indent=4, default=str))
+        except Exception:
+            print(" ", sp_from_body)
+        print("  student_profile from session:", session.get("student_profile"))
+        print("")
+
         student_profile = _require_body_field(body, "student_profile")
         _log_intermediate({"student_profile": student_profile})
 
+        # --------------------------------------------------------------
+        # STEP 3 - Processing profile
+        # --------------------------------------------------------------
+        print("=================================================")
+        print("STEP 3 - Processing profile")
+        print("=================================================")
+        print("  Fields present in student_profile:")
+        if isinstance(student_profile, dict):
+            for field_key, field_val in student_profile.items():
+                print(f"    {field_key}: {field_val!r}")
+        else:
+            print("  [student_profile is not a dict — type:", type(student_profile).__name__, "]")
+        print("")
+
+        # --------------------------------------------------------------
+        # STEP 4 - Building profile summary (calling Profile Agent)
+        # --------------------------------------------------------------
+        print("=================================================")
+        print("STEP 4 - Building profile summary")
+        print("=================================================")
+        print("  Calling agents.profile_agent.run() ...")
+        print("")
+
         from agents.profile_agent import run as run_profile
         result = run_profile(student_profile)
+
+        print("  Profile Agent returned:")
+        try:
+            print(_json.dumps(result, indent=4, default=str))
+        except Exception:
+            print(" ", result)
+        print("")
+
+        # --------------------------------------------------------------
+        # STEP 5 - Returning response
+        # --------------------------------------------------------------
+        print("=================================================")
+        print("STEP 5 - Returning response")
+        print("=================================================")
+        print(f"  Status: 200")
+        print(f"  career_readiness_score: {result.get('career_readiness_score')}")
+        print(f"  profile_tier: {result.get('profile_tier')}")
+        print(f"  score_band: {result.get('score_band')}")
+        print(f"  estimated_time_to_ready_months: {result.get('estimated_time_to_ready_months')}")
+        print("")
 
         log.info(
             "/api/profile → score=%s tier=%s",
@@ -192,9 +287,35 @@ def profile():
         return jsonify(result), 200
 
     except AppError as exc:
+        print("")
+        print("=================================================")
+        print("[PROFILE ROUTE] AppError caught")
+        print("=================================================")
+        print("  message:", exc.message)
+        print("  status_code:", exc.status_code)
+        print("")
+        print("FULL TRACEBACK:")
+        print(traceback.format_exc())
+        print("=================================================")
         log.error("/api/profile error: %s", exc.message)
         _log_route_end("/api/profile", exc.to_dict(), exc.status_code)
         return jsonify(exc.to_dict()), exc.status_code
+
+    except Exception as exc:
+        print("")
+        print("=================================================")
+        print("[PROFILE ROUTE] Unexpected Exception caught")
+        print("=================================================")
+        print("  type:", type(exc).__name__)
+        print("  message:", str(exc))
+        print("")
+        print("FULL TRACEBACK:")
+        print(traceback.format_exc())
+        print("=================================================")
+        log.error("/api/profile unexpected error: %s", str(exc))
+        error_body = {"error": True, "message": f"Internal server error: {str(exc)}"}
+        _log_route_end("/api/profile", error_body, 500)
+        return jsonify(error_body), 500
 
 
 @pipeline_bp.route("/recommend", methods=["POST"])
