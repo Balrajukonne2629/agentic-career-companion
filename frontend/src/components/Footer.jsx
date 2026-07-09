@@ -21,7 +21,7 @@ function Footer() {
 
           <div className="space-y-0.5 text-left leading-tight md:text-right">
             <a
-              href="mailto:support@example.com"
+              href="mailto:balrajukonne@gmail.com?subject=Feedback%20-%20Career%20Companion"
               className="font-semibold text-blue-600 underline-offset-4 transition duration-200 ease-out hover:underline dark:text-blue-400"
             >
               Feedback / Help

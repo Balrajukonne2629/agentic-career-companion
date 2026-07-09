@@ -139,6 +139,17 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
     pipelineResults?.profileAnalysis?.career_readiness_score ??
     Math.round(reportSkillGaps.reduce((total, item) => total + item.level, 0) / reportSkillGaps.length);
 
+  const handleStartLearning = () => {
+    document.getElementById('roadmap')?.scrollIntoView({
+      behavior: reducedMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
+
+  const handleExportReport = () => {
+    window.print();
+  };
+
   useEffect(() => {
     if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return undefined;
 
@@ -207,7 +218,7 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
           </nav>
         </aside>
 
-        <div className="min-w-0 space-y-5">
+        <div className="print-area min-w-0 space-y-5">
           <section id="career" className="scroll-mt-20 rounded-3xl border border-blue-200 bg-white p-5 shadow-md dark:border-blue-400/30 dark:bg-zinc-900 dark:shadow-glass sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
@@ -361,6 +372,7 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
               </div>
               <button
                 type="button"
+                onClick={handleStartLearning}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-glow transition duration-200 ease-out hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-400 dark:text-zinc-950 dark:hover:bg-blue-300"
               >
                 <PlayCircle className="h-4 w-4" aria-hidden="true" />
@@ -384,6 +396,7 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
               </div>
               <button
                 type="button"
+                onClick={handleStartLearning}
                 className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-glow transition duration-200 ease-out hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-400 dark:text-zinc-950 dark:hover:bg-blue-300"
               >
                 <PlayCircle className="h-4 w-4" aria-hidden="true" />
@@ -391,6 +404,7 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
               </button>
               <button
                 type="button"
+                onClick={handleExportReport}
                 className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-600 transition duration-200 ease-out hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-300"
               >
                 <Download className="h-4 w-4" aria-hidden="true" />
