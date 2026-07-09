@@ -432,6 +432,31 @@ function WorkspaceCard({
   setDraft,
   reducedMotion = false,
 }) {
+  const [speechWarning, setSpeechWarning] = useState(false);
+
+  const handleModeChange = (newMode) => {
+    if (newMode === 'speak') {
+      const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+      if (!SpeechRecognition) {
+        setSpeechWarning(true);
+        onModeChange('write');
+        return;
+      }
+    }
+    setSpeechWarning(false);
+    onModeChange(newMode);
+  };
+
+  useEffect(() => {
+    if (mode === 'speak') {
+      const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+      if (!SpeechRecognition) {
+        setSpeechWarning(true);
+        onModeChange('write');
+      }
+    }
+  }, [mode, onModeChange]);
+
   const pipelinePreview = useMemo(
     () => pipelineRows.map((row) => ({ key: row.key, label: row.label.replace(' Agent', ''), state: row.state })),
     [pipelineRows],
@@ -445,9 +470,9 @@ function WorkspaceCard({
     screen === 'pipeline' ? (
       <PipelineProgress rows={pipelineRows} onRetry={onRetryStep} onSimulateError={onSimulateError} />
     ) : mode === 'speak' ? (
-      <SpeakMode onContinue={onStartPipeline} reducedMotion={reducedMotion} />
+      <SpeakMode onContinue={onStartPipeline} onFallback={() => handleModeChange('write')} reducedMotion={reducedMotion} />
     ) : (
-      <WriteMode value={draft} onChange={setDraft} onContinue={onStartPipeline} reducedMotion={reducedMotion} />
+      <WriteMode value={draft} onChange={setDraft} onContinue={onStartPipeline} speechWarning={speechWarning} reducedMotion={reducedMotion} />
     );
 
   return (
@@ -463,7 +488,7 @@ function WorkspaceCard({
       </div>
 
       {screen === 'compose' ? (
-        <SegmentedToggle value={mode} onChange={onModeChange} reducedMotion={reducedMotion} />
+        <SegmentedToggle value={mode} onChange={handleModeChange} reducedMotion={reducedMotion} />
       ) : (
         <div className="flex items-center justify-center gap-2 overflow-x-auto text-xs text-zinc-500 dark:text-zinc-400">
           {pipelinePreview.map((stage, index) => (

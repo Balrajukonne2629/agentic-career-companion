@@ -83,13 +83,19 @@ def create_app() -> Flask:
     # -------------------------------------------------------------------
     # CORS — allow React dev server and dynamic frontend origins
     # -------------------------------------------------------------------
+    cors_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://agentic-career-companion.vercel.app",
+    ]
+    if config.FRONTEND_URL and config.FRONTEND_URL not in cors_origins:
+        cors_origins.append(config.FRONTEND_URL)
+
     CORS(
         app,
-        origins=[
-            "http://localhost:3000",   # React development server
-            "http://127.0.0.1:3000",
-            config.FRONTEND_URL,
-        ],
+        origins=cors_origins,
         supports_credentials=True,    # Required for session cookies
     )
 

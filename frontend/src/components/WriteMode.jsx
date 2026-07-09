@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { PenSquare, SendHorizontal } from 'lucide-react';
+import { AlertTriangle, PenSquare, SendHorizontal } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { MAX_WRITE_CHARS, MIN_WRITE_CHARS, writeExample } from '../data/workspaceCopy';
 
 /**
- * @param {{ value: string, onChange: (value: string) => void, onContinue: (value: string) => void, reducedMotion?: boolean }} props
+ * @param {{ value: string, onChange: (value: string) => void, onContinue: (value: string) => void, speechWarning?: boolean, reducedMotion?: boolean }} props
  */
-function WriteMode({ value, onChange, onContinue, reducedMotion = false }) {
+function WriteMode({ value, onChange, onContinue, speechWarning = false, reducedMotion = false }) {
   const [focused, setFocused] = useState(false);
 
   const length = value.trim().length;
@@ -42,6 +42,17 @@ function WriteMode({ value, onChange, onContinue, reducedMotion = false }) {
             <PenSquare className="h-5 w-5" aria-hidden="true" />
           </div>
         </div>
+
+        {speechWarning && (
+          <div className="relative mt-5 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <div className="flex-1">
+                Speech recognition is not supported in your browser. Automatically switched to manual typing mode.
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className={`relative mt-6 rounded-[1.75rem] border bg-white/70 p-5 shadow-inner transition dark:bg-zinc-950/50 ${focused ? 'border-ibm-blue ring-2 ring-ibm-blue/20' : 'border-zinc-200/80 dark:border-white/10'}`}>
           <label htmlFor="write-introduction" className="sr-only">

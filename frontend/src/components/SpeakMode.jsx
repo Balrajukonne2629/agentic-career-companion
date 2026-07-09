@@ -1,18 +1,22 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Mic, Pause, RotateCcw, SendHorizontal, Sparkles } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { introTags, MIN_SPEAK_CHARS, speakSampleTranscript } from '../data/workspaceCopy';
 
 const SHOW_DEV_CONTROLS = import.meta.env.DEV;
 
+const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
+const isSupported = !!SpeechRecognition;
+
 /**
- * @param {{ onContinue: (transcript: string) => void, reducedMotion?: boolean }} props
+ * @param {{ onContinue: (transcript: string) => void, onFallback?: () => void, reducedMotion?: boolean }} props
  */
-function SpeakMode({ onContinue, reducedMotion = false }) {
+function SpeakMode({ onContinue, onFallback, reducedMotion = false }) {
   const [phase, setPhase] = useState('onboarding');
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [permissionError, setPermissionError] = useState(false);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     if (phase !== 'recording') {
@@ -23,16 +27,22 @@ function SpeakMode({ onContinue, reducedMotion = false }) {
       setElapsedSeconds((current) => current + 1);
     }, 1000);
 
-    const autoStop = setTimeout(() => {
-      setTranscript(speakSampleTranscript);
-      setPhase('review');
-    }, 6200);
-
     return () => {
       clearInterval(timer);
-      clearTimeout(autoStop);
     };
   }, [phase]);
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (err) {
+          // ignore
+        }
+      }
+    };
+  }, []);
 
   const bars = useMemo(() => [34, 72, 44, 96, 58, 116, 48, 88, 64, 104, 42, 78, 54, 92, 38, 68], []);
 
@@ -43,14 +53,99 @@ function SpeakMode({ onContinue, reducedMotion = false }) {
   };
 
   const handleStart = () => {
+    console.log('[SpeechRecognition] Start clicked');
     setPermissionError(false);
     setElapsedSeconds(0);
-    setPhase('recording');
+    setTranscript('');
+
+    if (!isSupported) {
+      console.warn('[SpeechRecognition] Speech recognition not supported in this browser.');
+      onFallback?.();
+      return;
+    }
+
+    try {
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+
+      rec.onstart = () => {
+        console.log('[SpeechRecognition] Started recording session');
+        setPhase('recording');
+      };
+
+      rec.onresult = (event) => {
+        console.log('[SpeechRecognition] Result received');
+        let accumulatedTranscript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          accumulatedTranscript += event.results[i][0].transcript + ' ';
+        }
+        const updatedText = accumulatedTranscript.trim();
+        console.log('[SpeechRecognition] Transcript updated:', updatedText);
+        setTranscript(updatedText);
+      };
+
+      rec.onerror = (event) => {
+        console.error('[SpeechRecognition] Error event:', event.error);
+        if (event.error === 'not-allowed') {
+          setPermissionError(true);
+          setPhase('onboarding');
+        } else {
+          console.warn(`[SpeechRecognition] Non-fatal error details: ${event.error}`);
+        }
+      };
+
+      rec.onend = () => {
+        console.log('[SpeechRecognition] Session ended');
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+    } catch (err) {
+      console.error('[SpeechRecognition] Failed to initialize speech recognition:', err);
+    }
   };
 
   const handleStop = () => {
-    setTranscript(speakSampleTranscript);
+    console.log('[SpeechRecognition] Stop clicked');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (err) {
+        console.error('[SpeechRecognition] Error stopping recognition:', err);
+      }
+      recognitionRef.current = null;
+    }
     setPhase('review');
+  };
+
+  const handleCancel = () => {
+    console.log('[SpeechRecognition] Aborting/cancelling recording');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (err) {
+        console.error('[SpeechRecognition] Error aborting recognition:', err);
+      }
+      recognitionRef.current = null;
+    }
+    setPhase('onboarding');
+  };
+
+  const handleReset = () => {
+    console.log('[SpeechRecognition] Resetting from review');
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch (err) {
+        console.error('[SpeechRecognition] Error aborting recognition:', err);
+      }
+      recognitionRef.current = null;
+    }
+    setTranscript('');
+    setElapsedSeconds(0);
+    setPhase('onboarding');
   };
 
   const handleSimulatePermissionDenied = () => {
@@ -196,7 +291,7 @@ function SpeakMode({ onContinue, reducedMotion = false }) {
               </button>
               <button
                 type="button"
-                onClick={() => setPhase('onboarding')}
+                onClick={handleCancel}
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/70 bg-white/60 px-5 py-3 text-sm font-semibold text-zinc-600 transition hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ibm-blue dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:text-zinc-50"
               >
                 <RotateCcw className="h-4 w-4" aria-hidden="true" />
@@ -230,11 +325,7 @@ function SpeakMode({ onContinue, reducedMotion = false }) {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setPhase('onboarding');
-                  setElapsedSeconds(0);
-                  setTranscript('');
-                }}
+                onClick={handleReset}
                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-zinc-200/80 bg-white/70 px-4 py-2 text-sm font-semibold text-zinc-600 transition hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ibm-blue dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:text-zinc-50"
               >
                 <RotateCcw className="h-4 w-4" aria-hidden="true" />
