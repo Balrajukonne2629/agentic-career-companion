@@ -1,12 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  BookOpen,
   Briefcase,
   CheckCircle2,
   Download,
   Gauge,
   Map,
-  PlayCircle,
   RefreshCcw,
   Target,
   TrendingUp,
@@ -138,13 +136,6 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
   const readiness =
     pipelineResults?.profileAnalysis?.career_readiness_score ??
     Math.round(reportSkillGaps.reduce((total, item) => total + item.level, 0) / reportSkillGaps.length);
-
-  const handleStartLearning = () => {
-    document.getElementById('roadmap')?.scrollIntoView({
-      behavior: reducedMotion ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  };
 
   const handleExportReport = () => {
     window.print();
@@ -358,28 +349,6 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
               </div>
             </div>
           </section>
-
-          <section className="rounded-3xl border border-zinc-200/90 bg-white/92 p-5 shadow-md backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-900 dark:shadow-glass lg:hidden">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">
-                  <BookOpen className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-zinc-950 dark:text-zinc-50">Next Best Action</h2>
-                  <p className="max-w-[65ch] text-sm leading-6 text-zinc-500 dark:text-zinc-400">Start with one portfolio project and weekly progress checkpoints.</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleStartLearning}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-glow transition duration-200 ease-out hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-400 dark:text-zinc-950 dark:hover:bg-blue-300"
-              >
-                <PlayCircle className="h-4 w-4" aria-hidden="true" />
-                Start Learning Path
-              </button>
-            </div>
-          </section>
         </div>
 
         <aside className="hidden lg:sticky lg:top-16 lg:block">
@@ -394,14 +363,7 @@ function DashboardReport({ reducedMotion, onRetryStep, pipelineResults }) {
                 <p className="text-sm text-zinc-500 dark:text-zinc-400">Overall Readiness</p>
                 <p className="mt-1 text-3xl font-bold text-blue-600 dark:text-blue-400">{readiness}%</p>
               </div>
-              <button
-                type="button"
-                onClick={handleStartLearning}
-                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-glow transition duration-200 ease-out hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-400 dark:text-zinc-950 dark:hover:bg-blue-300"
-              >
-                <PlayCircle className="h-4 w-4" aria-hidden="true" />
-                Start Learning Path
-              </button>
+
               <button
                 type="button"
                 onClick={handleExportReport}

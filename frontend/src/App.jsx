@@ -226,8 +226,10 @@ function App() {
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
   return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-transparent text-zinc-700 transition-colors duration-300 dark:text-zinc-200">
-      <AmbientBackground />
+    <div className="relative isolate min-h-screen overflow-hidden bg-transparent text-zinc-700 transition-colors duration-300 dark:text-zinc-200 print:h-auto print:overflow-visible">
+      <div className="print:hidden">
+        <AmbientBackground />
+      </div>
 
       <div className="relative z-10">
         <TopBar theme={theme} onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} />

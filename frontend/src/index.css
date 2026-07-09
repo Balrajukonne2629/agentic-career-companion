@@ -65,6 +65,10 @@ body {
 }
 
 @media print {
+  html, body, #root {
+    height: auto !important;
+    overflow: visible !important;
+  }
   body * {
     visibility: hidden;
   }
@@ -77,5 +81,7 @@ body {
     top: 0;
     left: 0;
     width: 100%;
+    height: auto !important;
+    overflow: visible !important;
   }
 }
