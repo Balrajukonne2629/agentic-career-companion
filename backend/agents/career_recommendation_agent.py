@@ -257,8 +257,21 @@ def _call_granite_for_reasoning(
         career_candidates = _build_candidate_block(top3),
     )
 
+    print("==================================================")
+    print("CAREER AGENT")
+    print("==================================================")
+    print("Prompt Sent:")
+    print(prompt)
+    print()
+
     try:
         raw = call_granite_strong(prompt, params={"max_new_tokens": 600})
+        
+        print("Granite Response:")
+        print(raw)
+        print("==================================================")
+        print()
+
         parsed = parse_granite_json(raw)
 
         if not isinstance(parsed, list):
@@ -284,6 +297,9 @@ def _call_granite_for_reasoning(
 
     except (GraniteCallError, GraniteParseError) as exc:
         log.warning("Granite unavailable — using deterministic fallback")
+        print("Granite Response: [Failed — using deterministic fallback]")
+        print("==================================================")
+        print()
         return [None, None, None]
 
 

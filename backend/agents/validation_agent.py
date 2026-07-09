@@ -63,12 +63,9 @@ from agents.validation_utils import (
     normalize_skills,
     normalize_year,
 )
-from errors import GraniteCallError, GraniteParseError
 from logger import get_logger
 from utils.career_loader import get_interest_categories, get_skills_vocabulary, get_all_careers
-from utils.granite_client import call_granite_fast
 from utils.interest_map import infer_interests, infer_learning_style
-from utils.json_parser import parse_granite_json
 
 log = get_logger(__name__)
 
@@ -96,94 +93,7 @@ VALID_LEARNING_STYLES = frozenset(
     {"project-based", "video-based", "reading-based", "mixed"}
 )
 
-# ---------------------------------------------------------------------------
-# Pass-1 Granite extraction prompt
-# ---------------------------------------------------------------------------
-
-_EXTRACTION_SCHEMA = """\
-{
-  "name": <string or null>,
-  "branch": <string or null>,
-  "year": <string or null>,
-  "cgpa": <string or null>,
-  "skills": <array of strings or null>,
-  "interests": <array of strings or null>,
-  "career_goal": <string or null>,
-  "preferred_learning_style": <string or null>,
-  "availability_per_week": <string or null>
-}"""
-
-_EXTRACTION_EXAMPLE = """\
-{
-  "name": "Balraju",
-  "branch": "B.Tech Information Technology",
-  "year": "second",
-  "cgpa": "8.58",
-  "skills": ["Java", "C++", "React"],
-  "interests": ["web development", "full stack"],
-  "career_goal": "Full Stack Developer",
-  "preferred_learning_style": null,
-  "availability_per_week": null
-}"""
-
-_FIELD_GUIDANCE = """\
-Field extraction guidance:
-- name: The student's first or full name. Look for "I am", "My name is", "I'm".
-- branch: Degree and branch. Look for B.Tech, B.E., BSc, MCA, followed by a subject.
-- year: Current year of study. Look for "first year", "2nd year", "third year", "final year".
-- cgpa: Academic score. Look for CGPA, GPA, percentage, score. Return the raw value as a string.
-- skills: Programming languages, frameworks, tools mentioned. Return as an array.
-- interests: Topics, domains, or areas the student enjoys or wants to explore. Return as an array.
-- career_goal: Target job role or career path. Look for "want to become", "goal is", "interested in becoming".
-- preferred_learning_style: How they prefer to learn (hands-on, videos, reading). May be null.
-- availability_per_week: Hours per week available to study. Look for numeric statements. Return as a string."""
-
-_BASE_PROMPT_TEMPLATE = """\
-You are a student profile extraction assistant.
-
-Your task is to extract information from the student introduction below and return it as a JSON object.
-
-RULES:
-1. Return ONLY a JSON object. No explanation. No markdown fences. No extra text.
-2. If a field is not mentioned in the introduction, set its value to null.
-3. Do not invent or guess any information.
-4. Return skills and interests as arrays. All other fields are strings.
-
-{field_guidance}
-
-The expected JSON schema is:
-{schema}
-
-Example output:
-{example}
-
-Extract from the student introduction below and return the JSON object:
-STUDENT_INTRODUCTION_START
-{transcript}
-STUDENT_INTRODUCTION_END
-
-JSON:"""
-
-_RETRY_PROMPT_TEMPLATE = """\
-You are a student profile extraction assistant.
-
-Your previous response was not valid JSON. Please try again.
-
-STRICT RULES:
-1. Return ONLY a valid JSON object — start with {{ and end with }}.
-2. Do not include any text, explanation, or markdown before or after the JSON.
-3. Every field must be present. Use null for fields not mentioned.
-4. Skills and interests must be JSON arrays (e.g. ["Java", "Python"]).
-
-The expected JSON schema is:
-{schema}
-
-Extract from the student introduction below:
-STUDENT_INTRODUCTION_START
-{transcript}
-STUDENT_INTRODUCTION_END
-
-Respond with only the JSON object starting with {{:"""
+# Validation Agent uses pure Python regex-based extraction only.
 
 
 # ---------------------------------------------------------------------------
@@ -217,34 +127,47 @@ def run(
     """
     log.info("ValidationAgent.run | transcript_chars=%d", len(transcript))
 
-    # -----------------------------------------------------------------------
-    # Step 1 — Granite Pass-1: extract fields from transcript
-    # -----------------------------------------------------------------------
-    try:
-        extracted = _granite_extract(transcript)
-    except (GraniteCallError, GraniteParseError) as exc:
-        log.warning("Granite unavailable — using deterministic fallback")
-        extracted = _regex_extract(transcript)
+    # Print REQUEST RECEIVED stage log
+    print("==================================================")
+    print("REQUEST RECEIVED")
+    print("==================================================")
+    print("User Input:")
+    print(transcript)
+    print()
 
-    # -----------------------------------------------------------------------
+    # Step 1 — Regex extraction only (Validation Agent does NOT call Granite)
+    extracted = _regex_extract(transcript)
+
     # Step 2 — Merge with partial_profile (union for arrays, override otherwise)
-    # -----------------------------------------------------------------------
     merged = _merge(partial_profile or {}, extracted)
 
-    # -----------------------------------------------------------------------
     # Step 3 — Python normalisation
-    # -----------------------------------------------------------------------
     _apply_normalizations(merged, transcript)
 
-    # -----------------------------------------------------------------------
     # Step 4 — Apply defaults for the two defaulted fields
-    # -----------------------------------------------------------------------
     _apply_defaults(merged)
 
-    # -----------------------------------------------------------------------
     # Step 5 — Pass-2: Python gap detection on 7 hard-required fields
-    # -----------------------------------------------------------------------
     missing = _detect_missing(merged)
+
+    status = "incomplete" if missing else "complete"
+
+    # Print VALIDATION AGENT stage log
+    print("==================================================")
+    print("VALIDATION AGENT")
+    print("==================================================")
+    print("Extracted Name:")
+    print(merged.get("name"))
+    print()
+    print("Extracted Skills:")
+    print(merged.get("skills", []))
+    print()
+    print("Missing Fields:")
+    print(missing)
+    print()
+    print("Validation Status:")
+    print(status)
+    print()
 
     if missing:
         log.info(
@@ -257,9 +180,7 @@ def run(
             "partial_profile": merged,
         }
 
-    # -----------------------------------------------------------------------
     # Step 6 — Enforce session schema invariants before writing
-    # -----------------------------------------------------------------------
     _enforce_invariants(merged)
 
     log.info(
@@ -270,86 +191,6 @@ def run(
     return {"status": "complete", "profile": merged}
 
 
-# ---------------------------------------------------------------------------
-# Granite extraction (Pass 1) with one retry
-# ---------------------------------------------------------------------------
-
-def _granite_extract(transcript: str) -> Dict[str, Any]:
-    """
-    Call Granite granite-3-8b-instruct to extract profile fields.
-
-    Attempts the base extraction prompt first.  On JSON parse failure, retries
-    once with a stricter prompt and 20 % more max_new_tokens.
-
-    Parameters
-    ----------
-    transcript : str
-        Raw student transcript.
-
-    Returns
-    -------
-    dict
-        Raw extracted fields (values may be None / empty).
-
-    Raises
-    ------
-    GraniteCallError
-        If the Granite API call fails on both attempts.
-    GraniteParseError
-        If both JSON parse attempts fail.
-    """
-    prompt = _BASE_PROMPT_TEMPLATE.format(
-        field_guidance=_FIELD_GUIDANCE,
-        schema=_EXTRACTION_SCHEMA,
-        example=_EXTRACTION_EXAMPLE,
-        transcript=transcript,
-    )
-
-    raw = call_granite_fast(prompt)
-
-    try:
-        result = parse_granite_json(raw)
-        return _coerce_to_dict(result)
-    except GraniteParseError:
-        log.warning(
-            "ValidationAgent: Pass-1 JSON parse failed — retrying with strict prompt"
-        )
-
-    # Retry with modified prompt and more tokens
-    retry_prompt = _RETRY_PROMPT_TEMPLATE.format(
-        schema=_EXTRACTION_SCHEMA,
-        transcript=transcript,
-    )
-    raw_retry = call_granite_fast(
-        retry_prompt,
-        params={"max_new_tokens": int(1024 * 1.2)},
-    )
-
-    # Let GraniteParseError propagate on second failure
-    result = parse_granite_json(raw_retry)
-    return _coerce_to_dict(result)
-
-
-def _coerce_to_dict(value: Any) -> Dict[str, Any]:
-    """
-    Ensure the parsed Granite response is a dict.
-
-    Granite occasionally wraps the JSON object in a list.  If it returns a
-    single-element list containing a dict, unwrap it.  Anything else that is
-    not a dict is treated as a parse failure.
-
-    Raises
-    ------
-    GraniteParseError
-    """
-    if isinstance(value, dict):
-        return value
-    if isinstance(value, list) and len(value) == 1 and isinstance(value[0], dict):
-        return value[0]
-    raise GraniteParseError(
-        "Granite extraction returned an unexpected type. Expected a JSON object.",
-        detail=repr(value)[:200],
-    )
 
 
 def _regex_extract(transcript: str) -> Dict[str, Any]:

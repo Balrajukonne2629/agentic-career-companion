@@ -156,6 +156,19 @@ def _call_granite(
             raise  # Already typed — re-raise immediately
 
         except Exception as exc:
+            # Log exact exception, status code, and IBM response details if available
+            status_code = getattr(exc, "status_code", "Unknown")
+            reason = getattr(exc, "message", str(exc))
+            info = getattr(exc, "info", "")
+            
+            print("==================================================")
+            print("[ERROR] Granite Call Failed")
+            print(f"Status Code: {status_code}")
+            print(f"Reason: {reason}")
+            if info:
+                print(f"IBM Response: {info}")
+            print("==================================================")
+
             last_exc = exc
             attempt += 1
             if attempt <= MAX_RETRIES:
@@ -172,7 +185,7 @@ def _call_granite(
                 log.error(
                     "Granite %s call failed after %d attempts: %s",
                     model_id,
-                    MAX_RETRIES + 1,
+                    attempt,
                     str(exc),
                 )
 

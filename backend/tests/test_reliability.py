@@ -48,25 +48,19 @@ def complete_transcript():
 class TestReliabilityPipeline:
     """Tests the resilience of the entire agent pipeline when Granite is offline."""
 
-    @patch("agents.validation_agent.call_granite_fast")
-    @patch("agents.profile_agent.call_granite_fast")
     @patch("agents.career_recommendation_agent.call_granite_strong")
-    @patch("agents.skill_gap_agent.call_granite_strong")
     @patch("agents.roadmap_agent.call_granite_strong")
     def test_pipeline_http_429_rate_limit_degradation(
-        self, mock_road, mock_gap, mock_career, mock_profile, mock_val,
+        self, mock_road, mock_career,
         complete_transcript, caplog
     ):
         """
-        Mock ALL Granite calls to raise HTTP 429 rate limit exceptions,
+        Mock Granite calls to raise HTTP 429 rate limit exceptions,
         and verify that the entire pipeline still completes successfully
         and generates a complete dashboard with appropriate fallback logging.
         """
         err = GraniteCallError("The usage limit for the current plan has been reached (HTTP 429)")
-        mock_val.side_effect = err
-        mock_profile.side_effect = err
         mock_career.side_effect = err
-        mock_gap.side_effect = err
         mock_road.side_effect = err
 
         with caplog.at_level(logging.WARNING):
@@ -105,23 +99,17 @@ class TestReliabilityPipeline:
         warnings = [record.message for record in caplog.records if record.levelname == "WARNING"]
         assert any("Granite unavailable — using deterministic fallback" in w for w in warnings)
 
-    @patch("agents.validation_agent.call_granite_fast")
-    @patch("agents.profile_agent.call_granite_fast")
     @patch("agents.career_recommendation_agent.call_granite_strong")
-    @patch("agents.skill_gap_agent.call_granite_strong")
     @patch("agents.roadmap_agent.call_granite_strong")
     def test_pipeline_timeout_and_malformed_json_resilience(
-        self, mock_road, mock_gap, mock_career, mock_profile, mock_val,
+        self, mock_road, mock_career,
         complete_transcript, caplog
     ):
         """
         Mock some calls to timeout and others to return malformed garbage JSON,
         verifying that the pipeline still runs completely.
         """
-        mock_val.side_effect = GraniteCallError("Request timed out (timeout)")
-        mock_profile.return_value = "NOT VALID JSON"
-        mock_career.return_value = "[]"
-        mock_gap.side_effect = GraniteCallError("IBM watsonx service unavailable")
+        mock_career.side_effect = GraniteCallError("Request timed out (timeout)")
         mock_road.return_value = '{"30_day": {}, "60_day": {}}'
 
         with caplog.at_level(logging.WARNING):

@@ -242,6 +242,18 @@ def roadmap():
         )
 
         session[SESSION_ROADMAP] = result
+
+        # Print FINAL RESPONSE stage log
+        print("==================================================")
+        print("FINAL RESPONSE")
+        print("==================================================")
+        print("Dashboard Data:")
+        print(f"  Target Career: {result.get('target_career')}")
+        print(f"  Total Milestones: 3 phases (30, 60, 90 day)")
+        print(f"  Certifications Picked: {[c.get('name') for c in result.get('certifications', [])]}")
+        print(f"  Projects Picked: {[p.get('title') for p in result.get('projects', [])]}")
+        print()
+
         log.info("/api/roadmap → target=%s", result.get("target_career"))
         return jsonify(result), 200
 
@@ -313,6 +325,18 @@ def full_pipeline():
             "skill_gap": skill_gap,
             "roadmap": roadmap_result,
         }
+
+        # Print FINAL RESPONSE stage log
+        print("==================================================")
+        print("FINAL RESPONSE")
+        print("==================================================")
+        print("Dashboard Data:")
+        print(f"  Target Career: {roadmap_result.get('target_career')}")
+        print(f"  Total Milestones: 3 phases (30, 60, 90 day)")
+        print(f"  Certifications Picked: {[c.get('name') for c in roadmap_result.get('certifications', [])]}")
+        print(f"  Projects Picked: {[p.get('title') for p in roadmap_result.get('projects', [])]}")
+        print()
+
         log.info("/api/pipeline → complete for '%s'", student_profile.get("name"))
         return jsonify(response_body), 200
 

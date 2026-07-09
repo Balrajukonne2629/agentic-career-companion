@@ -2,37 +2,11 @@
 tests/test_validation_agent.py
 ==============================
 Unit tests for agents/validation_agent.py.
-
-All Granite calls are replaced with unittest.mock.patch so these tests run
-without an IBM Cloud account, without the ibm-watsonx-ai SDK, and without
-any network connection.
-
-Test scope:
-  - Complete transcript → status == "complete", all 9 fields correct
-  - Partial transcript → status == "incomplete", correct missing_fields list
-  - Follow-up / partial_profile merge → skills unioned, scalar values overridden
-  - Malformed Granite response (1st call) → retry triggered, success on retry
-  - Both Granite calls fail (GraniteCallError) → status == "error"
-  - Both Granite calls malformed (GraniteParseError) → status == "error"
-  - Granite returns non-dict JSON → status == "error"
-  - Session write safety → run() never writes to session (session is route's concern)
-  - Granite response wrapped in list → unwrapped correctly
-  - Interest canonicalisation → hallucinated interests discarded
-  - Interest keyword inference → always applied regardless of Granite output
-  - Learning style inference → applied, default "mixed" when undetected
-  - Availability extraction → from field value and transcript fallback
-  - CGPA written-number form → normalised correctly
-  - Invariant violation → ValueError raised when data is corrupt post-normalisation
-
-Run with:
-    python -m pytest tests/test_validation_agent.py -v
-    (from the backend/ directory)
 """
 
 import sys
 import os
 import types
-import json
 from unittest.mock import patch, MagicMock
 
 # ---------------------------------------------------------------------------
@@ -68,10 +42,9 @@ os.environ.setdefault("FLASK_SECRET_KEY", "test_secret_abc")
 
 import pytest
 from agents import validation_agent as va
-from errors import GraniteCallError, GraniteParseError
 
 # ---------------------------------------------------------------------------
-# Helper: build a valid Granite JSON response string for a given profile
+# Helper: build a valid Granite profile dict
 # ---------------------------------------------------------------------------
 
 def _granite_response(
@@ -85,8 +58,8 @@ def _granite_response(
     learning_style=None,
     availability=None,
 ):
-    """Return a JSON string as Granite would return it."""
-    return json.dumps({
+    """Return a dict as _regex_extract would return it."""
+    return {
         "name": name,
         "branch": branch,
         "year": year,
@@ -96,14 +69,14 @@ def _granite_response(
         "career_goal": career_goal,
         "preferred_learning_style": learning_style,
         "availability_per_week": availability,
-    })
+    }
 
 
 # Minimal complete response
 _COMPLETE_RESPONSE = _granite_response()
 
 # Partial response — missing cgpa and career_goal
-_PARTIAL_RESPONSE = json.dumps({
+_PARTIAL_RESPONSE = {
     "name": "Priya",
     "branch": "B.E. Computer Science",
     "year": "final",
@@ -113,14 +86,11 @@ _PARTIAL_RESPONSE = json.dumps({
     "career_goal": None,
     "preferred_learning_style": None,
     "availability_per_week": None,
-})
+}
 
 
-# ---------------------------------------------------------------------------
-# Patch target: call_granite_fast in validation_agent's namespace
-# ---------------------------------------------------------------------------
-
-PATCH_TARGET = "agents.validation_agent.call_granite_fast"
+# Patch target: _regex_extract in validation_agent's namespace
+PATCH_TARGET = "agents.validation_agent._regex_extract"
 
 
 # ===========================================================================
@@ -129,7 +99,7 @@ PATCH_TARGET = "agents.validation_agent.call_granite_fast"
 
 class TestCompleteTranscript:
     """
-    Granite returns all required fields → status == "complete".
+    Validation Agent returns all required fields → status == "complete".
     """
 
     def test_status_is_complete(self):
@@ -221,7 +191,7 @@ class TestCompleteTranscript:
 
 class TestPartialTranscript:
     """
-    Granite returns some null fields → status == "incomplete".
+    Extraction returns some null fields → status == "incomplete".
     """
 
     def test_status_is_incomplete(self):
@@ -303,12 +273,12 @@ class TestMergeWithPartialProfile:
             "interests": ["Data Science"], "career_goal": None,
             "preferred_learning_style": "mixed", "availability_per_week": 10,
         }
-        followup_response = json.dumps({
+        followup_response = {
             "name": None, "branch": None, "year": None,
             "cgpa": "7.8", "skills": [],
             "interests": [], "career_goal": "Data Analyst",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=followup_response):
             result = va.run("My CGPA is 7.8 and I want to be a Data Analyst",
                             partial_profile=prior)
@@ -324,12 +294,12 @@ class TestMergeWithPartialProfile:
             "interests": ["Data Science"], "career_goal": "Data Analyst",
             "preferred_learning_style": "mixed", "availability_per_week": 10,
         }
-        followup_response = json.dumps({
+        followup_response = {
             "name": None, "branch": None, "year": None,
             "cgpa": None, "skills": ["Pandas", "NumPy"],
             "interests": [], "career_goal": None,
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=followup_response):
             result = va.run("I also know Pandas and NumPy", partial_profile=prior)
         skills = result["profile"]["skills"]
@@ -345,12 +315,12 @@ class TestMergeWithPartialProfile:
             "interests": ["Web Development"], "career_goal": "Backend Developer",
             "preferred_learning_style": "mixed", "availability_per_week": 10,
         }
-        followup_response = json.dumps({
+        followup_response = {
             "name": None, "branch": None, "year": None, "cgpa": None,
             "skills": [], "interests": ["cloud computing"],
             "career_goal": None, "preferred_learning_style": None,
             "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=followup_response):
             result = va.run("I am also interested in cloud computing",
                             partial_profile=prior)
@@ -359,126 +329,23 @@ class TestMergeWithPartialProfile:
         assert "Cloud Computing" in interests
 
     def test_existing_scalar_preserved_when_new_is_null(self):
-        """If Granite returns null for a field that exists in partial_profile, keep prior value."""
+        """If extraction returns null for a field that exists in partial_profile, keep prior value."""
         prior = {
             "name": "Ravi", "branch": "B.Tech IT", "year": 3,
             "cgpa": None, "skills": ["Java"],
             "interests": ["Web Development"], "career_goal": "Backend Developer",
             "preferred_learning_style": "mixed", "availability_per_week": 10,
         }
-        followup_response = json.dumps({
+        followup_response = {
             "name": None, "branch": None, "year": None,
             "cgpa": "8.0", "skills": [],
             "interests": [], "career_goal": None,
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=followup_response):
             result = va.run("My CGPA is 8.0", partial_profile=prior)
         # "Ravi" kept from prior
         assert result["profile"]["name"] == "Ravi"
-
-
-# ===========================================================================
-# TestGraniteRetry
-# ===========================================================================
-
-class TestGraniteRetry:
-    """
-    Granite returns bad JSON on first call; second call succeeds → complete.
-    """
-
-    def test_retry_triggered_on_bad_json(self):
-        """First call returns garbage, second call returns valid JSON."""
-        call_count = 0
-
-        def side_effect(prompt, params=None):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return "This is not JSON at all %%% malformed"
-            return _COMPLETE_RESPONSE
-
-        with patch(PATCH_TARGET, side_effect=side_effect):
-            result = va.run("I am Balraju second year IT CGPA 8.58 "
-                            "skills Java React career Full Stack Developer")
-        assert result["status"] == "complete"
-        assert call_count == 2
-
-    def test_retry_triggered_on_markdown_wrapped_then_fixed(self):
-        """First call wraps JSON in fences (still parseable by json_parser), no retry needed."""
-        fenced = "```json\n" + _COMPLETE_RESPONSE + "\n```"
-        with patch(PATCH_TARGET, return_value=fenced) as mock_g:
-            result = va.run("I am Balraju second year IT CGPA 8.58 "
-                            "skills Java React career Full Stack Developer")
-        # json_parser handles fences — only 1 Granite call needed
-        assert result["status"] == "complete"
-        assert mock_g.call_count == 1
-
-    def test_retry_uses_more_tokens(self):
-        """On retry the params dict should contain max_new_tokens > 1024."""
-        call_count = 0
-        retry_params = {}
-
-        def side_effect(prompt, params=None):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return "NOT JSON"
-            retry_params.update(params or {})
-            return _COMPLETE_RESPONSE
-
-        with patch(PATCH_TARGET, side_effect=side_effect):
-            va.run("I am Balraju second year IT CGPA 8.58 "
-                   "skills Java React career Full Stack Developer")
-        assert retry_params.get("max_new_tokens", 0) > 1024
-
-
-# ===========================================================================
-# TestGraniteFailure
-# ===========================================================================
-
-class TestGraniteFailure:
-    """
-    Granite calls fail entirely → fallback to regex-based extraction.
-    """
-
-    def test_granite_call_error_falls_back_to_regex_complete(self):
-        """Granite fails, but transcript contains all required fields -> complete."""
-        transcript = (
-            "Hi, my name is Balraju. I am studying B.Tech IT in my second year. "
-            "My CGPA is 8.58. I know Java and React. I enjoy web development. "
-            "My career goal is to become a Full Stack Developer."
-        )
-        with patch(PATCH_TARGET, side_effect=GraniteCallError("API timeout")):
-            result = va.run(transcript)
-        assert result["status"] == "complete"
-        assert result["profile"]["name"] == "Balraju"
-        assert result["profile"]["cgpa"] == 8.58
-
-    def test_granite_call_error_falls_back_to_regex_incomplete(self):
-        """Granite fails, and transcript is missing CGPA -> incomplete profile with missing CGPA."""
-        transcript = (
-            "Hi, my name is Priya. I am studying B.Tech CSE in my final year. "
-            "I know Python and SQL. I am interested in data science. "
-            "My career goal is to become a Data Analyst."
-        )
-        with patch(PATCH_TARGET, side_effect=GraniteCallError("API timeout")):
-            result = va.run(transcript)
-        assert result["status"] == "incomplete"
-        assert "cgpa" in result["missing_fields"]
-        assert result["partial_profile"]["name"] == "Priya"
-
-    def test_parse_error_falls_back_to_regex(self):
-        """Granite returns garbage -> fallback to regex extraction."""
-        transcript = (
-            "Hi, my name is Balraju. I am studying B.Tech IT in my second year. "
-            "My CGPA is 8.58. I know Java and React. I enjoy web development. "
-            "My career goal is to become a Full Stack Developer."
-        )
-        with patch(PATCH_TARGET, return_value="INVALID JSON ALWAYS"):
-            result = va.run(transcript)
-        assert result["status"] == "complete"
-        assert result["profile"]["name"] == "Balraju"
 
 
 # ===========================================================================
@@ -493,7 +360,6 @@ class TestSessionSafety:
 
     def test_run_does_not_import_flask_session(self):
         """validation_agent module must not import flask.session at module level."""
-        import importlib
         import agents.validation_agent as mod
         src = open(mod.__file__).read()
         assert "from flask import" not in src, \
@@ -518,19 +384,19 @@ class TestSessionSafety:
 
 class TestInterestInference:
     """
-    Python keyword inference runs regardless of Granite's interest output.
-    Hallucinated interests from Granite are discarded.
+    Python keyword inference runs regardless of extraction interest output.
+    Hallucinated interests from extraction are discarded.
     """
 
     def test_python_inference_adds_interests(self):
         """Transcript contains "building websites" → Web Development inferred."""
-        no_interest_response = json.dumps({
+        no_interest_response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["HTML", "CSS"],
-            "interests": [],   # Granite found nothing
+            "interests": [],   # Extraction found nothing
             "career_goal": "Frontend Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=no_interest_response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 I know HTML CSS "
@@ -540,14 +406,14 @@ class TestInterestInference:
         assert "Web Development" in interests
 
     def test_hallucinated_granite_interest_discarded(self):
-        """Granite returns a non-canonical interest string → dropped."""
-        hallucinated = json.dumps({
+        """Extraction returns a non-canonical interest string → dropped."""
+        hallucinated = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["HTML"],
             "interests": ["coding for fun", "awesome stuff"],  # not canonical
             "career_goal": "Frontend Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=hallucinated):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills HTML "
@@ -558,14 +424,14 @@ class TestInterestInference:
         assert "awesome stuff" not in interests
 
     def test_canonical_granite_interest_kept(self):
-        """Granite returns a correctly-cased canonical interest → kept."""
-        canonical_response = json.dumps({
+        """Extraction returns a correctly-cased canonical interest → kept."""
+        canonical_response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["Python"],
             "interests": ["data science"],   # lowercase — should canonicalize
             "career_goal": "Data Analyst",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=canonical_response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills Python "
@@ -575,14 +441,14 @@ class TestInterestInference:
         assert "Data Science" in interests
 
     def test_no_duplicate_interests(self):
-        """Granite and Python both infer the same interest → appears once."""
-        response = json.dumps({
+        """Extraction and Python both infer the same interest → appears once."""
+        response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["HTML", "CSS"],
-            "interests": ["web development"],  # Granite also found this
+            "interests": ["web development"],  # Extraction also found this
             "career_goal": "Frontend Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills HTML CSS "
@@ -601,12 +467,12 @@ class TestLearningStyleAndAvailability:
 
     def test_learning_style_from_transcript(self):
         """Transcript says "I prefer learning by doing" → project-based."""
-        response = json.dumps({
+        response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["Java"],
             "interests": ["web development"], "career_goal": "Backend Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills Java "
@@ -624,12 +490,12 @@ class TestLearningStyleAndAvailability:
 
     def test_availability_from_transcript(self):
         """Transcript explicitly says hours → captured."""
-        response = json.dumps({
+        response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["Java"],
             "interests": ["web development"], "career_goal": "Backend Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills Java "
@@ -639,13 +505,13 @@ class TestLearningStyleAndAvailability:
         assert result["profile"]["availability_per_week"] == 15
 
     def test_availability_from_granite_field(self):
-        """Granite correctly extracts availability → used."""
-        response = json.dumps({
+        """Extraction correctly extracts availability → used."""
+        response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["Java"],
             "interests": ["web development"], "career_goal": "Backend Developer",
             "preferred_learning_style": None, "availability_per_week": "12",
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills Java "
@@ -660,13 +526,13 @@ class TestLearningStyleAndAvailability:
         assert result["profile"]["availability_per_week"] == 10
 
     def test_availability_out_of_bounds_uses_default(self):
-        """Granite returns "200" for availability → out of bounds → default 10."""
-        response = json.dumps({
+        """Extraction returns "200" for availability → out of bounds → default 10."""
+        response = {
             "name": "Ravi", "branch": "B.Tech IT", "year": "third",
             "cgpa": "8.0", "skills": ["Java"],
             "interests": ["web development"], "career_goal": "Backend Developer",
             "preferred_learning_style": None, "availability_per_week": "200",
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ravi third year IT CGPA 8.0 skills Java "
@@ -685,13 +551,13 @@ class TestCGPANormalisationInAgent:
     """
 
     def test_written_cgpa_normalised(self):
-        response = json.dumps({
+        response = {
             "name": "Balraju", "branch": "B.Tech IT", "year": "second",
             "cgpa": "eight point five eight",
             "skills": ["Java", "React"],
             "interests": ["web development"], "career_goal": "Full Stack Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Balraju second year IT my CGPA is eight point five eight "
@@ -701,13 +567,13 @@ class TestCGPANormalisationInAgent:
         assert result["profile"]["cgpa"] == 8.58
 
     def test_percentage_cgpa_normalised(self):
-        response = json.dumps({
+        response = {
             "name": "Ananya", "branch": "B.E. CS", "year": "third",
             "cgpa": "85%",
             "skills": ["Python", "SQL"],
             "interests": ["data science"], "career_goal": "Data Analyst",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ananya third year CS my score is 85% "
@@ -717,14 +583,14 @@ class TestCGPANormalisationInAgent:
         assert result["profile"]["cgpa"] == 8.5
 
     def test_invalid_cgpa_triggers_missing(self):
-        """Granite returns a nonsense CGPA → normalises to None → cgpa in missing_fields."""
-        response = json.dumps({
+        """Extraction returns a nonsense CGPA → normalises to None → cgpa in missing_fields."""
+        response = {
             "name": "Ananya", "branch": "B.E. CS", "year": "third",
             "cgpa": "not a number at all",
             "skills": ["Python"],
             "interests": ["data science"], "career_goal": "Data Analyst",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Ananya third year CS I know Python "
@@ -734,47 +600,18 @@ class TestCGPANormalisationInAgent:
 
 
 # ===========================================================================
-# TestGraniteListWrapping
-# ===========================================================================
-
-class TestGraniteListWrapping:
-
-    def test_single_element_list_unwrapped(self):
-        """Granite wraps the dict in a list → _coerce_to_dict unwraps it."""
-        wrapped = json.dumps([json.loads(_COMPLETE_RESPONSE)])
-        with patch(PATCH_TARGET, return_value=wrapped):
-            result = va.run("I am Balraju second year IT CGPA 8.58 "
-                            "skills Java React career Full Stack Developer")
-        # Should succeed — unwrapped correctly
-        assert result["status"] in ("complete", "incomplete")
-
-    def test_multi_element_list_falls_back_to_regex(self):
-        """Granite returns a list with 2+ elements → triggers fallback."""
-        two_items = json.dumps([{"a": 1}, {"b": 2}])
-        transcript = (
-            "Hi, my name is Balraju. I am studying B.Tech IT in my second year. "
-            "My CGPA is 8.58. I know Java and React. I enjoy web development. "
-            "My career goal is to become a Full Stack Developer."
-        )
-        with patch(PATCH_TARGET, return_value=two_items):
-            result = va.run(transcript)
-        assert result["status"] == "complete"
-        assert result["profile"]["name"] == "Balraju"
-
-
-# ===========================================================================
 # TestSkillsCanonicalization
 # ===========================================================================
 
 class TestSkillsCanonicalization:
 
     def test_lowercase_skills_canonicalized(self):
-        response = json.dumps({
+        response = {
             "name": "Kiran", "branch": "B.Tech IT", "year": "second",
             "cgpa": "8.0", "skills": ["javascript", "react", "node"],
             "interests": ["web development"], "career_goal": "Full Stack Developer",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Kiran second year IT CGPA 8.0 "
@@ -782,18 +619,17 @@ class TestSkillsCanonicalization:
                 "I enjoy building websites want to be Full Stack Developer"
             )
         skills = result["profile"]["skills"]
-        # Should be canonicalized: "JavaScript", "React", "Node.js"
         assert "JavaScript" in skills
         assert "React" in skills
 
     def test_duplicate_skills_deduplicated(self):
-        response = json.dumps({
+        response = {
             "name": "Kiran", "branch": "B.Tech IT", "year": "second",
             "cgpa": "8.0",
             "skills": ["Python", "python", "PYTHON"],
             "interests": ["data science"], "career_goal": "Data Analyst",
             "preferred_learning_style": None, "availability_per_week": None,
-        })
+        }
         with patch(PATCH_TARGET, return_value=response):
             result = va.run(
                 "I am Kiran second year IT CGPA 8.0 I know Python "

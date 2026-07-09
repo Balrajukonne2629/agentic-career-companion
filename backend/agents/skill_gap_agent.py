@@ -32,11 +32,8 @@ Models used
 
 from typing import Any, Dict, List, Optional
 
-from errors import GraniteCallError, GraniteParseError
 from logger import get_logger
 from utils.career_loader import get_career_by_id
-from utils.granite_client import call_granite_strong
-from utils.json_parser import parse_granite_json
 
 log = get_logger(__name__)
 
@@ -44,27 +41,8 @@ log = get_logger(__name__)
 # Granite prompt template
 # ---------------------------------------------------------------------------
 
-_SKILL_GAP_PROMPT_TEMPLATE = """\
-You are a technical career advisor. A student is targeting a career as a {target_career}.
-Their current skills are: {student_skills}
-The skills they still need to learn are: {skills_to_learn}
+# Skill Gap Agent uses pure Python rules and heuristics only.
 
-For each skill in the "skills to learn" list, assign a priority and write a 1-sentence reason.
-
-Priority rules:
-- "Critical"  : This skill is a core requirement for the role and the student has no related knowledge.
-- "Important" : This skill is required but the student has adjacent or transferable skills.
-- "Beneficial": This skill is a nice-to-have that improves employability but is not a blocker.
-
-Rules:
-- Output ONLY a valid JSON array.
-- Each item must have exactly three keys: "skill" (string), "priority" (string), "reason" (string).
-- "priority" must be exactly one of: "Critical", "Important", "Beneficial".
-- Do NOT include tools or frameworks that are not in the "skills to learn" list.
-- Do NOT add any text outside the JSON array.
-
-Output JSON array:
-"""
 
 # ---------------------------------------------------------------------------
 # Deterministic set-difference computation
@@ -114,63 +92,6 @@ def _compute_gaps(
     }
 
 
-# ---------------------------------------------------------------------------
-# Granite prioritisation call
-# ---------------------------------------------------------------------------
-
-def _call_granite_for_priorities(
-    target_career: str,
-    student_skills: List[str],
-    skills_to_prioritise: List[str],
-) -> List[Optional[Dict[str, Any]]]:
-    """
-    Ask Granite to assign priority + reason for each skill gap item.
-
-    Returns a list of dicts (or None for failed items).
-    Falls back gracefully on any error.
-    """
-    if not skills_to_prioritise:
-        return []
-
-    prompt = _SKILL_GAP_PROMPT_TEMPLATE.format(
-        target_career  = target_career,
-        student_skills = ", ".join(student_skills) if student_skills else "none",
-        skills_to_learn = ", ".join(skills_to_prioritise),
-    )
-
-    try:
-        raw    = call_granite_strong(prompt, params={"max_new_tokens": 700})
-        parsed = parse_granite_json(raw)
-
-        if not isinstance(parsed, list):
-            log.warning("Skill Gap Agent: Granite returned non-list — using fallback priorities.")
-            return [None] * len(skills_to_prioritise)
-
-        # Build skill → {priority, reason} map from Granite output
-        granite_map: Dict[str, Dict[str, str]] = {}
-        for item in parsed:
-            if isinstance(item, dict):
-                skill    = str(item.get("skill", "")).strip().lower()
-                priority = str(item.get("priority", "")).strip()
-                reason   = str(item.get("reason", "")).strip()
-                if skill and priority in ("Critical", "Important", "Beneficial"):
-                    granite_map[skill] = {"priority": priority, "reason": reason}
-
-        results = []
-        for skill in skills_to_prioritise:
-            mapped = granite_map.get(skill.lower().strip())
-            if mapped and mapped.get("reason"):
-                results.append({"skill": skill, **mapped})
-            else:
-                results.append(None)
-
-        good = sum(1 for r in results if r is not None)
-        log.info("Skill Gap Agent: Granite prioritised %d/%d skills.", good, len(skills_to_prioritise))
-        return results
-
-    except (GraniteCallError, GraniteParseError) as exc:
-        log.warning("Granite unavailable — using deterministic fallback")
-        return [None] * len(skills_to_prioritise)
 
 
 def _fallback_priority(skill: str, student_skills_lc: set) -> str:
@@ -278,26 +199,15 @@ def run(
     student_skills     = student_profile.get("skills", [])
     student_skills_lc  = _normalise_set(student_skills)
 
-    # Step 2 — Prioritise required_gap via Granite
-    granite_results = _call_granite_for_priorities(
-        target_career,
-        student_skills,
-        gaps["required_gap"],
-    )
-
-    # Assemble skills_to_learn (required gaps with Granite or fallback priority)
+    # Step 2 — Prioritise required_gap via Python logic (Skill Gap Agent does NOT call Granite)
     skills_to_learn: List[Dict[str, Any]] = []
-    for idx, skill in enumerate(gaps["required_gap"]):
-        granite_item = granite_results[idx] if idx < len(granite_results) else None
-        if granite_item and isinstance(granite_item, dict):
-            skills_to_learn.append(granite_item)
-        else:
-            priority = _fallback_priority(skill, student_skills_lc)
-            skills_to_learn.append({
-                "skill":    skill,
-                "priority": priority,
-                "reason":   f"Required skill for {target_career} not yet in your toolkit.",
-            })
+    for skill in gaps["required_gap"]:
+        priority = _fallback_priority(skill, student_skills_lc)
+        skills_to_learn.append({
+            "skill":    skill,
+            "priority": priority,
+            "reason":   f"Required skill for {target_career} not yet in your toolkit.",
+        })
 
     # Append beneficial (nice-to-have) gaps — always "Beneficial" priority
     for skill in gaps["beneficial_gap"]:
@@ -327,6 +237,31 @@ def run(
         "tools_to_learn":   tools_to_learn,
         "gap_summary":      summary,
     }
+
+    # Calculate readiness score deterministically
+    cgpa = float(student_profile.get("cgpa") or 0.0)
+    skill_count = len(student_skills)
+    interest_count = len(student_profile.get("interests", []))
+    has_career_goal = bool(student_profile.get("career_goal"))
+    cgpa_component     = min(cgpa / 10.0, 1.0) * 35.0
+    skill_component    = min(skill_count / 8.0, 1.0) * 40.0
+    interest_component = min(interest_count / 3.0, 1.0) * 15.0
+    goal_component     = 10.0 if has_career_goal else 0.0
+    readiness_score = int(cgpa_component + skill_component + interest_component + goal_component)
+
+    # Print SKILL GAP AGENT stage log
+    print("==================================================")
+    print("SKILL GAP AGENT")
+    print("==================================================")
+    print("Current Skills:")
+    print(gaps["skills_already_have"])
+    print()
+    print("Missing Skills:")
+    print([s["skill"] for s in skills_to_learn if s["priority"] in ("Critical", "Important")])
+    print()
+    print("Readiness Score:")
+    print(readiness_score)
+    print()
 
     log.info(
         "Skill Gap Agent: complete — critical=%d important=%d beneficial=%d tools=%d",

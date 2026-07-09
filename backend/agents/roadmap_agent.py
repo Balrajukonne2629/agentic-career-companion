@@ -253,8 +253,21 @@ def _call_granite_for_roadmap(
         weeks_90        = weeks_90,
     )
 
+    print("==================================================")
+    print("ROADMAP AGENT")
+    print("==================================================")
+    print("Prompt Sent:")
+    print(prompt)
+    print()
+
     try:
         raw    = call_granite_strong(prompt, params={"max_new_tokens": 1200})
+        
+        print("Granite Response:")
+        print(raw)
+        print("==================================================")
+        print()
+
         parsed = parse_granite_json(raw)
 
         if not isinstance(parsed, dict):
@@ -272,6 +285,9 @@ def _call_granite_for_roadmap(
 
     except (GraniteCallError, GraniteParseError) as exc:
         log.warning("Granite unavailable — using deterministic fallback")
+        print("Granite Response: [Failed — using deterministic fallback]")
+        print("==================================================")
+        print()
         return None
 
 

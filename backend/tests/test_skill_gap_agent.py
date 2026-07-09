@@ -2,32 +2,11 @@
 tests/test_skill_gap_agent.py
 ==============================
 Unit tests for agents/skill_gap_agent.py.
-
-All Granite calls and KB loading are mocked.
-
-Test scope:
-  - _compute_gaps: correct set-difference for required / nice-to-have / tools
-  - _compute_gaps: case-insensitive comparison
-  - _compute_gaps: student already has all required skills → zero gap
-  - _compute_summary: counts add up correctly
-  - _fallback_priority: heuristic returns "Critical" or "Important"
-  - run() output contract: all required keys present
-  - run() Granite success: priorities taken from Granite
-  - run() Granite failure: fallback priorities used, run() still succeeds
-  - run() zero-gap case: tools and skills are empty, summary all zeros
-  - run() unknown career_id: graceful fallback to minimal KB dict
-  - tools_to_learn: always "Important" priority
-  - beneficial_gap: always "Beneficial" priority
-
-Run with:
-    python -m pytest tests/test_skill_gap_agent.py -v
-    (from the backend/ directory)
 """
 
 import sys
 import os
 import types
-import json
 from unittest.mock import patch, MagicMock
 
 # SDK mocking
@@ -57,10 +36,8 @@ os.environ.setdefault("FLASK_SECRET_KEY", "test_secret_abc")
 
 import pytest
 from agents import skill_gap_agent as sga
-from errors import GraniteCallError, GraniteParseError
 
-PATCH_GRANITE = "agents.skill_gap_agent.call_granite_strong"
-PATCH_KB      = "agents.skill_gap_agent.get_career_by_id"
+PATCH_KB = "agents.skill_gap_agent.get_career_by_id"
 
 # ---------------------------------------------------------------------------
 # Test fixtures
@@ -86,21 +63,9 @@ def _make_profile(skills=None):
     }
 
 
-def _granite_priority_response(skills_list):
-    """Return a Granite-style JSON array prioritising each skill."""
-    items = []
-    for skill in skills_list:
-        items.append({
-            "skill":    skill,
-            "priority": "Critical",
-            "reason":   f"{skill} is essential for the role.",
-        })
-    return json.dumps(items)
-
-
-# ---------------------------------------------------------------------------
-# Unit: _compute_gaps
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# TestComputeGaps
+# ===========================================================================
 
 class TestComputeGaps:
     def test_student_has_some_skills_correctly_split(self):
@@ -114,7 +79,6 @@ class TestComputeGaps:
     def test_case_insensitive_matching(self):
         profile = _make_profile(skills=["react", "sql"])   # lowercase
         gaps    = sga._compute_gaps(profile, _CAREER_KB)
-        # React and SQL are in required_skills (Title Case) but student has lowercase
         assert "React" in gaps["skills_already_have"]
         assert "SQL"   in gaps["skills_already_have"]
 
@@ -132,14 +96,12 @@ class TestComputeGaps:
         assert "Docker"     in gaps["beneficial_gap"]
 
     def test_tools_gap_correct(self):
-        # Student skills don't include tools
         profile = _make_profile(skills=["React"])
         gaps    = sga._compute_gaps(profile, _CAREER_KB)
         assert "VS Code"   in gaps["tools_gap"]
         assert "Postman"   in gaps["tools_gap"]
 
     def test_tools_already_in_skills_not_in_gap(self):
-        # If student lists "GitHub" as a skill, it should not appear in tools_gap
         profile = _make_profile(skills=["React", "GitHub"])
         gaps    = sga._compute_gaps(profile, _CAREER_KB)
         assert "GitHub" not in gaps["tools_gap"]
@@ -157,9 +119,9 @@ class TestComputeGaps:
         assert gaps["tools_gap"] == []
 
 
-# ---------------------------------------------------------------------------
-# Unit: _compute_summary
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# TestComputeSummary
+# ===========================================================================
 
 class TestComputeSummary:
     def test_counts_correct(self):
@@ -194,9 +156,9 @@ class TestComputeSummary:
         )
 
 
-# ---------------------------------------------------------------------------
-# Unit: _fallback_priority
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# TestFallbackPriority
+# ===========================================================================
 
 class TestFallbackPriority:
     def test_unknown_skill_returns_critical(self):
@@ -204,7 +166,6 @@ class TestFallbackPriority:
         assert result == "Critical"
 
     def test_adjacent_skill_returns_important(self):
-        # student has "node" → gap is "node.js" → Important
         result = sga._fallback_priority("node.js", {"node", "react"})
         assert result == "Important"
 
@@ -213,37 +174,33 @@ class TestFallbackPriority:
         assert isinstance(result, str)
 
 
-# ---------------------------------------------------------------------------
-# Integration: run() output contract
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# TestRunOutputContract
+# ===========================================================================
 
 class TestRunOutputContract:
     def test_all_required_top_level_keys(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value=_granite_priority_response(["HTML", "CSS"])):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=["React", "SQL"]), _TOP_REC)
         for key in ("target_career", "target_career_id", "skills_already_have",
                     "skills_to_learn", "tools_to_learn", "gap_summary"):
             assert key in result, f"Missing key: {key}"
 
     def test_gap_summary_has_all_keys(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(), _TOP_REC)
         for key in ("critical_count", "important_count", "beneficial_count",
                     "tools_count", "total_gap_items"):
             assert key in result["gap_summary"]
 
     def test_target_career_set_correctly(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(), _TOP_REC)
         assert result["target_career"]    == "Full Stack Developer"
         assert result["target_career_id"] == "full-stack-developer"
 
     def test_skills_to_learn_items_have_correct_keys(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=["React"]), _TOP_REC)
         for item in result["skills_to_learn"]:
             assert "skill"    in item
@@ -251,8 +208,7 @@ class TestRunOutputContract:
             assert "reason"   in item
 
     def test_tools_to_learn_items_have_correct_keys(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=[]), _TOP_REC)
         for item in result["tools_to_learn"]:
             assert "tool"     in item
@@ -260,30 +216,27 @@ class TestRunOutputContract:
             assert "reason"   in item
 
     def test_tools_always_important_priority(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=[]), _TOP_REC)
         for item in result["tools_to_learn"]:
             assert item["priority"] == "Important"
 
     def test_beneficial_items_always_beneficial(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=[]), _TOP_REC)
         for item in result["skills_to_learn"]:
             if item["skill"] in _CAREER_KB["nice_to_have_skills"]:
                 assert item["priority"] == "Beneficial"
 
 
-# ---------------------------------------------------------------------------
-# Integration: run() — gap scenarios
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# TestRunGapScenarios
+# ===========================================================================
 
 class TestRunGapScenarios:
     def test_zero_gap_student(self):
         all_req = _CAREER_KB["required_skills"]
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=all_req), _TOP_REC)
         assert result["skills_to_learn"] == [] or all(
             item["priority"] == "Beneficial" for item in result["skills_to_learn"]
@@ -292,8 +245,7 @@ class TestRunGapScenarios:
         assert result["gap_summary"]["important_count"] == 0
 
     def test_all_required_in_gap_when_no_skills(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=_CAREER_KB):
             result = sga.run(_make_profile(skills=[]), _TOP_REC)
         gap_skills = {item["skill"] for item in result["skills_to_learn"]
                       if item["priority"] != "Beneficial"}
@@ -302,51 +254,6 @@ class TestRunGapScenarios:
 
     def test_unknown_career_id_does_not_crash(self):
         rec = {"career_id": "nonexistent-career", "title": "Unknown Career"}
-        with patch(PATCH_KB, return_value=None), \
-             patch(PATCH_GRANITE, return_value="[]"):
+        with patch(PATCH_KB, return_value=None):
             result = sga.run(_make_profile(), rec)
         assert "gap_summary" in result
-
-
-# ---------------------------------------------------------------------------
-# Integration: run() — Granite failure paths
-# ---------------------------------------------------------------------------
-
-class TestRunGraniteFallbacks:
-    def test_granite_call_error_uses_fallback_priorities(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, side_effect=GraniteCallError("API down")):
-            result = sga.run(_make_profile(skills=["React"]), _TOP_REC)
-        assert "skills_to_learn" in result
-        # All required_gap items should have fallback priority
-        for item in result["skills_to_learn"]:
-            if item["priority"] != "Beneficial":
-                assert item["priority"] in ("Critical", "Important")
-
-    def test_granite_parse_error_uses_fallback(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, side_effect=GraniteParseError("bad JSON")):
-            result = sga.run(_make_profile(skills=["React"]), _TOP_REC)
-        assert "gap_summary" in result
-
-    def test_granite_returns_non_list_uses_fallback(self):
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value='{"not": "a list"}'):
-            result = sga.run(_make_profile(skills=["React"]), _TOP_REC)
-        assert len(result["skills_to_learn"]) > 0
-
-    def test_granite_success_uses_returned_priorities(self):
-        gap_skills = ["HTML", "CSS", "JavaScript"]
-        granite_items = [
-            {"skill": "HTML",       "priority": "Important",  "reason": "Adjacent to React."},
-            {"skill": "CSS",        "priority": "Important",  "reason": "Styling foundation."},
-            {"skill": "JavaScript", "priority": "Critical",   "reason": "Core language."},
-        ]
-        with patch(PATCH_KB, return_value=_CAREER_KB), \
-             patch(PATCH_GRANITE, return_value=json.dumps(granite_items)):
-            result = sga.run(_make_profile(skills=["React", "SQL"]), _TOP_REC)
-        skills_map = {i["skill"]: i["priority"] for i in result["skills_to_learn"]}
-        if "HTML" in skills_map:
-            assert skills_map["HTML"] == "Important"
-        if "JavaScript" in skills_map:
-            assert skills_map["JavaScript"] == "Critical"
