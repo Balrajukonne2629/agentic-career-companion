@@ -1,73 +1,122 @@
+
 # Agentic Career Counseling Companion
 
-An AI-powered onboarding and career counseling advisor designed for computer science and engineering students. The application collects student transcripts (via speech-to-text or manual input), validates profile information, computes readiness scores, ranks career paths, identifies skill gaps, and maps out a dynamic 30/60/90-day learning curriculum.
+**AI-powered career onboarding and guidance platform for engineering students.**
 
-Built with **React (Vite)** on the frontend, a **Flask Python** server on the backend, and powered by **IBM watsonx.ai (Granite-4-h-small)**.
+Collects a student's profile (via voice or manual input), validates and scores it, ranks the best-fit career paths, identifies missing skills, and generates a personalized 30/60/90-day learning roadmap — through a 5-agent pipeline powered by IBM watsonx.ai (Granite).
 
----
-### live url:https://agentic-career-companion.vercel.app/
-
-## 🚀 Key Features
-
-* **Multi-Agent Architecture:** A modular processing pipeline of 5 dedicated agents:
-  1. **Validation Agent:** Extracts credentials, normalizes scores (CGPA, year), and flags missing info.
-  2. **Profile Agent:** Calculates profile tiers, readiness scores (0-100), and estimates time-to-ready.
-  3. **Career Agent:** Performs deterministic scoring and matches students to the top 3 best-suited careers.
-  4. **Skill Gap Agent:** Computes exact set-differences to list missing tools and required/nice-to-have skills.
-  5. **Roadmap Agent:** Structures a personalized 30/60/90-day curriculum with target projects and certifications.
-* **Fault-Tolerant Fallback Architecture:** Automatically degrades gracefully to pure Python extraction and local heuristics if the IBM watsonx.ai API is rate-limited (HTTP 429), timed out, or offline.
-* **Flexible Voice & Speech Input:** Employs browser Web Speech API for voice interactions with optional IBM Speech-To-Text client support.
+🔗 **Live Demo:** [agentic-career-companion.vercel.app](https://agentic-career-companion.vercel.app/)
 
 ---
 
-## 🛠️ Tech Stack
+## Table of Contents
 
-* **Frontend:** React, Vite, Framer Motion, TailwindCSS, Axios
-* **Backend:** Flask, Flask-CORS, Flask-Session, python-dotenv, Gunicorn
-* **AI Engine:** IBM watsonx.ai SDK, Granite Models (fast/strong text generator APIs)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
-## 📂 Project Structure
+## Overview
+
+Most career-guidance tools give generic, one-size-fits-all advice. This project takes a student's actual academic profile and interests, and produces career recommendations, skill-gap analysis, and a learning roadmap grounded in that specific profile — not a static template.
+
+The system is built as a **hybrid pipeline**: deterministic logic (validation, scoring, gap analysis) runs in Python for speed and reliability, while IBM Granite is reserved for the parts that genuinely need language reasoning — career recommendation narratives and roadmap generation.
+
+## Architecture
+
+```
+Student Input (Text / Voice)
+        │
+        ▼
+┌─────────────────┐
+│ Validation Agent │  Extracts & normalizes CGPA, year, skills, interests
+└────────┬─────────┘
+         ▼
+┌─────────────────┐
+│  Profile Agent   │  Computes readiness score, profile tier, time-to-ready
+└────────┬─────────┘
+         ▼
+┌─────────────────┐
+│  Career Agent    │  Ranks top 3 career matches (IBM Granite)
+└────────┬─────────┘
+         ▼
+┌─────────────────┐
+│ Skill Gap Agent  │  Set-difference against target career skill profile
+└────────┬─────────┘
+         ▼
+┌─────────────────┐
+│ Roadmap Agent    │  Generates 30/60/90-day plan (IBM Granite)
+└────────┬─────────┘
+         ▼
+  Interactive Dashboard
+```
+
+**Design principle:** Python agents never block on an LLM call — Granite is only invoked for the two agents where open-ended generation actually adds value (Career, Roadmap), keeping the pipeline fast, cheap, and resilient.
+
+### Key Features
+
+| Feature | Description |
+|---|---|
+| **Multi-Agent Pipeline** | 5 specialized agents, each with one responsibility, passing structured JSON downstream |
+| **Fault-Tolerant Fallback** | Gracefully degrades to local heuristics if the watsonx.ai API is rate-limited (HTTP 429), times out, or is offline |
+| **Voice & Text Input** | Browser Web Speech API, with optional IBM Speech-to-Text integration |
+| **Deterministic Scoring** | CGPA, skills, and interest-based scoring computed in pure Python — auditable and fast |
+| **Exportable Career Report** | Dashboard output can be exported for the student's own records |
+
+## Tech Stack
+
+**Frontend** — React, Vite, TailwindCSS, Framer Motion, Axios
+**Backend** — Flask, Flask-CORS, Flask-Session, python-dotenv, Gunicorn
+**AI Engine** — IBM watsonx.ai SDK, Granite model (`granite-4.0-h-small`)
+
+## Project Structure
 
 ```text
 ├── backend/
-│   ├── agents/            # Pipeline agents (validation, profile, career, etc.)
-│   ├── data/              # Career knowledge base (career_data.json)
-│   ├── routes/            # Flask blueprint API routes (health, pipeline, stt)
-│   ├── tests/             # 333+ pytest unit and reliability test suites
-│   ├── utils/             # Watson STT, Granite client, and parser utilities
-│   ├── app.py             # App factory entry point
-│   ├── config.py          # Environment configuration loader
-│   └── requirements.txt   # Python packages
+│   ├── agents/            # Pipeline agents (validation, profile, career, skill-gap, roadmap)
+│   ├── data/               # Career knowledge base (career_data.json)
+│   ├── routes/             # Flask blueprint API routes (health, pipeline, stt)
+│   ├── tests/               # 333+ pytest unit and reliability tests
+│   ├── utils/               # Watson STT, Granite client, parser utilities
+│   ├── app.py               # App factory entry point
+│   ├── config.py            # Environment configuration loader
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # Reusable UI widgets
-│   │   ├── services/      # apiClient and backend service modules
-│   │   └── App.jsx        # Dashboard container
-│   ├── package.json       # Node package manager configuration
-│   └── copy_build.js      # Postbuild script copying static build assets
-└── .gitignore             # Git exclusion rules
+│   │   ├── components/     # Reusable UI widgets
+│   │   ├── services/        # API client and backend service modules
+│   │   └── App.jsx           # Dashboard container
+│   ├── package.json
+│   └── copy_build.js         # Postbuild script for static asset copying
+└── .gitignore
 ```
 
----
+## Getting Started
 
-## 🖥️ Local Installation & Setup
+### Prerequisites
+- Python 3.11.9
+- Node.js 18+
+- An IBM watsonx.ai project with API key
 
 ### 1. Backend Setup
-Clone the repository, navigate to the `backend` folder, and configure a virtual environment:
 
-```powershell
+```bash
 cd backend
 python -m venv .venv
-.\.venv\Scripts\activate   # On Windows (PowerShell)
-source .venv/bin/activate  # On macOS/Linux
+source .venv/bin/activate       # macOS/Linux
+.\.venv\Scripts\activate         # Windows PowerShell
 
 pip install -r requirements.txt
 ```
 
-#### Environment Configuration
-Create a `.env` file in the `backend/` directory by copying `.env.example` and filling in the values:
+Copy `.env.example` to `.env` and fill in your credentials:
+
 ```env
 IBM_API_KEY=your_ibm_cloud_api_key
 IBM_PROJECT_ID=your_ibm_watsonx_project_id
@@ -78,48 +127,47 @@ SESSION_COOKIE_SAMESITE=Lax
 FLASK_ENV=development
 ```
 
-Start the Flask server:
-```powershell
+```bash
 python app.py
 ```
-The server will boot on `http://localhost:5000`.
+Backend runs at `http://localhost:5000`.
 
 ### 2. Frontend Setup
-Navigate to the `frontend` folder and install dependencies:
 
-```powershell
+```bash
 cd ../frontend
 npm install
-```
-
-Start the frontend development server:
-```powershell
 npm run dev
 ```
-The client will run on `http://localhost:3000`.
+Frontend runs at `http://localhost:3000`.
 
----
+## Testing
 
-## 🧪 Testing
+333+ unit and integration tests covering agent logic, fallback behavior, and API routes:
 
-The backend includes a comprehensive test suite of 333 unit and integration tests. Run the suite inside the active virtual environment:
-
-```powershell
+```bash
 cd backend
 python -m pytest -v
 ```
 
----
-
-## ☁️ Deployment
+## Deployment
 
 ### Frontend (Vercel / Netlify)
-* **Build Command:** `npm run build`
-* **Output Directory:** `dist`
-* **Env Variable:** Set `VITE_API_BASE_URL` to your deployed backend domain (e.g., `https://your-backend.onrender.com/api`).
+- **Build command:** `npm run build`
+- **Output directory:** `dist`
+- **Env variable:** `VITE_API_BASE_URL` → your deployed backend URL (e.g. `https://your-backend.onrender.com/api`)
 
 ### Backend (Render)
-* **Build Command:** `pip install -r requirements.txt`
-* **Start Command:** `gunicorn app:app`
-* **Env Variables:** Configure IBM watsonx.ai credentials, `FRONTEND_URL` pointing to your Vercel/Netlify URL, and set `SESSION_COOKIE_SAMESITE=None` to ensure cookie-sharing works.
-* **Important Note:** Specify `PYTHON_VERSION` = `3.11.9` in the Render environment or ensure `backend/runtime.txt` is present to bypass C/C++ compiler requirements when installing packages like `pandas`.
+- **Build command:** `pip install -r requirements.txt`
+- **Start command:** `gunicorn app:app`
+- **Env variables:** IBM watsonx.ai credentials, `FRONTEND_URL` → your frontend URL, `SESSION_COOKIE_SAMESITE=None` for cross-origin cookie sharing in production
+- **Note:** Set `PYTHON_VERSION=3.11.9` (or commit `backend/runtime.txt`) — avoids compiler errors when installing packages like `pandas` on newer Python versions
+
+## Acknowledgments
+
+Built as part of the **IBM SkillsBuild Internship Program**, in collaboration with **Edunet Foundation**, powered by **IBM watsonx.ai** and **Granite Foundation Models**.
+
+---
+
+**Author:** Balraju Konne — B.Tech Information Technology, Chaitanya Bharathi Institute of Technology
+
