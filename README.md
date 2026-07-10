@@ -5,6 +5,7 @@ An AI-powered onboarding and career counseling advisor designed for computer sci
 Built with **React (Vite)** on the frontend, a **Flask Python** server on the backend, and powered by **IBM watsonx.ai (Granite-4-h-small)**.
 
 ---
+### live url:https://agentic-career-companion.vercel.app/
 
 ## 🚀 Key Features
 
