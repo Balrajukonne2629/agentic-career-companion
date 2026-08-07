@@ -169,5 +169,5 @@ Built as part of the **IBM SkillsBuild Internship Program**, in collaboration wi
 
 ---
 
-**Author:** Balraju Konne — B.Tech Information Technology, Chaitanya Bharathi Institute of Technology
+**Author:** Balraju Konne — B.E Information Technology, Chaitanya Bharathi Institute of Technology
 
