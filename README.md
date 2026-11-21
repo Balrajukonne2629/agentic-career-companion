@@ -5,7 +5,7 @@
 
 Collects a student's profile (via voice or manual input), validates and scores it, ranks the best-fit career paths, identifies missing skills, and generates a personalized 30/60/90-day learning roadmap — through a 5-agent pipeline powered by IBM watsonx.ai (Granite).
 
-🔗 **Live Demo:** [agentic-career-companion.vercel.app](https://agentic-career-companion.vercel.app/)
+🔗 **Live Demo:** [agentic-career-companion.balrajukonne.cv](https://agentic-career-companion.balrajukonne.cv/)
 
 ---
 

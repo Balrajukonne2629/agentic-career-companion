@@ -36,87 +36,47 @@
     <meta name="twitter:image" content="https://agentic-career-companion.balrajukonne.cv/og-image.png" />
 
     <!-- Favicon & Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f62fe'><path d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.5h-2v-2h2zm0-4h-2V7h2z'/></svg>" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
 
-    <!-- Structured Data (JSON-LD) -->
+    <!-- Structured Data (JSON-LD: WebApplication) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebApplication",
-          "@id": "https://agentic-career-companion.balrajukonne.cv/#webapp",
-          "name": "Agentic Career Companion",
-          "url": "https://agentic-career-companion.balrajukonne.cv/",
-          "applicationCategory": "EducationalApplication",
-          "operatingSystem": "Web",
-          "description": "Agentic Career Companion is a multi-agent AI career counseling tool built on IBM watsonx.ai. It analyzes your skills, finds career matches, identifies skill gaps and generates a personalized learning roadmap.",
-          "author": {
-            "@type": "Person",
-            "name": "Balraju Konne",
-            "url": "https://www.linkedin.com/in/balraju-konne"
-          }
-        },
-        {
-          "@type": "FAQPage",
-          "@id": "https://agentic-career-companion.balrajukonne.cv/#faq",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "What is Agentic Career Companion?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Agentic Career Companion is a multi-agent AI career counseling tool built on IBM watsonx.ai. It analyzes student academic backgrounds, identifies skill proficiencies, and matches users to ideal technology careers. It then generates personalized 30, 60, and 90-day learning roadmaps to bridge preparation gaps."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "How are skill gaps identified?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "The Skill Gap Agent performs deterministic set-difference analysis between your validated profile skills and industry benchmarks for your matched role. It categorizes gaps into required competencies and recommended tools with exact proficiency targets. This ensures targeted guidance rather than generic recommendations."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Which AI model powers the system?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "The application is powered by IBM watsonx.ai using the IBM Granite foundation model series. Dedicated specialized agents handle credential validation, readiness scoring, career ranking, and curriculum generation. The platform also includes local heuristic fallbacks to guarantee reliability during high API traffic."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Is Agentic Career Companion free to use?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Yes, Agentic Career Companion is completely free to use for students and job seekers. You can speak or write your career background without any sign-up fee or subscription requirement. All recommendations and roadmap milestones are generated instantly in your browser session."
-              }
-            },
-            {
-              "@type": "Question",
-              "name": "Who built Agentic Career Companion?",
-              "acceptedAnswer": {
-                "@type": "Answer",
-                "text": "Agentic Career Companion was designed and built by Balraju Konne, an Information Technology student at Chaitanya Bharathi Institute of Technology (CBIT). The project was developed as part of the IBM SkillsBuild AICTE Internship program. It combines agentic workflow design with modern web application engineering."
-              }
-            }
-          ]
-        }
-      ]
+      "@type": "WebApplication",
+      "@id": "https://agentic-career-companion.balrajukonne.cv/#webapp",
+      "name": "Agentic Career Companion",
+      "url": "https://agentic-career-companion.balrajukonne.cv/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "description": "Agentic Career Companion is a multi-agent AI career counseling tool built on IBM watsonx.ai. It analyzes your skills, finds career matches, identifies skill gaps and generates a personalized learning roadmap.",
+      "author": {
+        "@type": "Person",
+        "name": "Balraju Konne",
+        "url": "https://www.linkedin.com/in/balraju-konne"
+      }
     }
     </script>
-
-    <!-- 
-      TODO: Prerender Assessment (Vite SPA):
-      Lightest options: Static landing HTML shell or @prerenderer/rollup-plugin.
-      Heavyweight tools like vite-plugin-ssg or react-snap require headless browser SSR that can break
-      client-side Web Speech API and localStorage listeners on initial mount.
-      The static HTML structure, Open Graph tags, and structured JSON-LD schemas above provide complete
-      search engine indexability and AI engine discoverability without risking client hydration errors.
-    -->
   </head>
   <body>
+    <!-- Noscript Fallback for SEO / Non-JS Crawlers -->
+    <noscript>
+      <header>
+        <h1>AI Career Counseling Companion</h1>
+        <p>
+          Agentic Career Companion is a multi-agent AI career counseling tool built on IBM watsonx.ai. It analyzes your skills, finds career matches, identifies skill gaps and generates a personalized learning roadmap.
+        </p>
+      </header>
+      <nav aria-label="Fallback navigation">
+        <ul>
+          <li><a href="/how-it-works">How It Works</a></li>
+          <li><a href="/faq">Frequently Asked Questions</a></li>
+          <li><a href="/about">About the Project</a></li>
+        </ul>
+      </nav>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

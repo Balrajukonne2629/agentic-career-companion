@@ -17,6 +17,7 @@ import {
   pipelinePreviewStages,
 } from './data/workspaceCopy';
 import { pipelineSteps } from './services/pipelineService';
+import { applyRouteMeta } from './data/routeMeta';
 
 function readStorage(key, fallback) {
   if (typeof window === 'undefined') return fallback;
@@ -66,6 +67,8 @@ function App() {
     return '/';
   });
 
+  const isDashboardView = currentPath === '/dashboard' || currentPath === '/results' || screen === 'dashboard';
+
   const navigate = useCallback((path) => {
     if (typeof window !== 'undefined') {
       window.history.pushState(null, '', path);
@@ -83,28 +86,10 @@ function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // SEO: Dynamic noindex, nofollow on private routes (dashboard / results)
+  // Per-route metadata and robots control: updates document.title, canonical, description, og:tags
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    const isPrivate =
-      currentPath === '/dashboard' ||
-      currentPath === '/results' ||
-      screen === 'dashboard';
-
-    let robotsMeta = document.querySelector('meta[name="robots"]');
-    if (!robotsMeta) {
-      robotsMeta = document.createElement('meta');
-      robotsMeta.name = 'robots';
-      document.head.appendChild(robotsMeta);
-    }
-
-    if (isPrivate) {
-      robotsMeta.setAttribute('content', 'noindex, nofollow');
-    } else {
-      robotsMeta.setAttribute('content', 'index, follow');
-    }
-  }, [currentPath, screen]);
+    applyRouteMeta(currentPath, isDashboardView);
+  }, [currentPath, isDashboardView]);
 
   const showToast = useCallback((message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -372,8 +357,6 @@ function App() {
 
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-  const isDashboardView = currentPath === '/dashboard' || currentPath === '/results' || screen === 'dashboard';
-
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-transparent text-zinc-700 transition-colors duration-300 dark:text-zinc-200 print:h-auto print:overflow-visible">
       <div className="print:hidden">
@@ -390,8 +373,8 @@ function App() {
       </div>
 
       <main
-        className={`relative z-10 mx-auto flex w-full flex-col gap-4 px-4 py-8 sm:px-6 sm:py-10 lg:px-0 lg:py-12 ${
-          isDashboardView ? 'max-w-6xl' : currentPath === '/' ? 'max-w-4xl' : 'max-w-4xl'
+        className={`relative z-10 mx-auto flex w-full flex-col gap-4 px-3.5 py-6 sm:px-6 sm:py-10 lg:px-8 lg:py-12 ${
+          isDashboardView ? 'max-w-6xl' : 'max-w-4xl'
         }`}
       >
         {currentPath === '/faq' ? (
