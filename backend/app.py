@@ -66,12 +66,12 @@ def create_app() -> Flask:
     )
 
     # -------------------------------------------------------------------
-    # Core configuration
+    # Core configuration & session cookies
     # -------------------------------------------------------------------
     app.config["SECRET_KEY"] = config.FLASK_SECRET_KEY
     app.config["DEBUG"] = config.DEBUG
     app.config["SESSION_COOKIE_SAMESITE"] = config.SESSION_COOKIE_SAMESITE
-    # SameSite=None requires Secure=True. Otherwise, use HTTPS in production.
+    # SameSite=None requires Secure=True. For cross-origin production, secure=True.
     if config.SESSION_COOKIE_SAMESITE.lower() == "none":
         app.config["SESSION_COOKIE_SECURE"] = True
     else:
@@ -81,22 +81,14 @@ def create_app() -> Flask:
     )
 
     # -------------------------------------------------------------------
-    # CORS — allow React dev server and dynamic frontend origins
+    # CORS — single source of truth using CORS_ORIGINS
     # -------------------------------------------------------------------
-    cors_origins = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://agentic-career-companion.vercel.app",
-    ]
-    if config.FRONTEND_URL and config.FRONTEND_URL not in cors_origins:
-        cors_origins.append(config.FRONTEND_URL)
-
     CORS(
         app,
-        origins=cors_origins,
-        supports_credentials=True,    # Required for session cookies
+        origins=config.CORS_ORIGINS,
+        supports_credentials=True,
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
     # -------------------------------------------------------------------
@@ -176,10 +168,11 @@ def create_app() -> Flask:
             # Do not crash the app — health check will report the error
 
     log.info(
-        "Flask app created | env=%s | debug=%s | stt=%s",
+        "Flask app created | env=%s | debug=%s | stt=%s | cors_origins=%s",
         config.FLASK_ENV,
         config.DEBUG,
         "available" if config.WATSON_STT_AVAILABLE else "not configured",
+        config.CORS_ORIGINS,
     )
     return app
 

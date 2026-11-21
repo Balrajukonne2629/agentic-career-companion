@@ -18,8 +18,14 @@ The API will be available at http://localhost:5000
 
 ## Verify Installation
 
-Visit http://localhost:5000/api/health — should return HTTP 200 with
-Granite model checks passing.
+Visit http://localhost:5000/api/health — should return HTTP 200 with `{"status": "ok"}`.
+Pass `?full=true` to run live Granite model and Knowledge Base checks.
+
+## Configuration & CORS
+
+Configured via environment variables (`.env` or platform config):
+- `CORS_ORIGINS`: Comma-separated allowed frontend origins (e.g. `https://agentic-career-companion.balrajukonne.cv,https://agentic-career-companion.vercel.app,http://localhost:5173`).
+- `SESSION_COOKIE_SAMESITE`: Set to `None` with `SESSION_COOKIE_SECURE=True` in production for cross-site cookie support.
 
 ## Project Structure
 

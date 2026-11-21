@@ -27,6 +27,27 @@ class ConfigurationError(Exception):
     """Raised when a required environment variable is missing."""
 
 
+DEFAULT_CORS_ORIGINS: list[str] = [
+    "https://agentic-career-companion.balrajukonne.cv",
+    "https://agentic-career-companion.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+
+
+def parse_cors_origins(raw: str | None) -> list[str]:
+    """
+    Parse comma-separated CORS origins from environment variable.
+    Trims whitespace and strips any trailing slashes.
+    Ignores empty items.
+    Falls back to DEFAULT_CORS_ORIGINS if raw is empty or None.
+    """
+    if not raw:
+        return list(DEFAULT_CORS_ORIGINS)
+    origins = [item.strip().rstrip("/") for item in raw.split(",") if item.strip()]
+    return origins if origins else list(DEFAULT_CORS_ORIGINS)
+
+
 class Config:
     """
     Immutable application configuration resolved from environment variables.
@@ -67,11 +88,22 @@ class Config:
         self.FLASK_ENV: str = os.environ.get("FLASK_ENV", "production")
         self.DEBUG: bool = self.FLASK_ENV == "development"
 
-        # Frontend URL (CORS allowed origin)
-        self.FRONTEND_URL: str = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+        # Frontend URLs & CORS allowed origins
+        self.CORS_ORIGINS: list[str] = parse_cors_origins(os.environ.get("CORS_ORIGINS"))
+        self.FRONTEND_URL: str = os.environ.get(
+            "FRONTEND_URL", "https://agentic-career-companion.balrajukonne.cv"
+        )
+        if self.FRONTEND_URL:
+            trimmed_frontend = self.FRONTEND_URL.strip().rstrip("/")
+            if trimmed_frontend and trimmed_frontend not in self.CORS_ORIGINS:
+                self.CORS_ORIGINS.append(trimmed_frontend)
 
         # Session config
-        self.SESSION_COOKIE_SAMESITE: str = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
+        is_production = self.FLASK_ENV == "production" and not self.DEBUG
+        default_samesite = "None" if is_production else "Lax"
+        self.SESSION_COOKIE_SAMESITE: str = os.environ.get(
+            "SESSION_COOKIE_SAMESITE", default_samesite
+        )
         self.SESSION_LIFETIME_SECONDS: int = int(
             os.environ.get("SESSION_LIFETIME_SECONDS", "3600")
         )
@@ -101,6 +133,7 @@ class Config:
         return (
             f"Config(env={self.FLASK_ENV}, "
             f"watsonx_url={self.IBM_WATSONX_URL}, "
+            f"cors_origins={self.CORS_ORIGINS}, "
             f"stt_available={self.WATSON_STT_AVAILABLE})"
         )
 

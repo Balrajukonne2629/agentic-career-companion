@@ -4,21 +4,14 @@ routes/health.py
 Health check endpoint.
 
 GET /api/health
-    Verifies that:
-    - The Flask application is running.
-    - career_data.json can be loaded.
-    - Both Granite models respond to a minimal test prompt.
-    - Watson STT service status is reported (available / not configured).
+    - Fast wake-up / ping check returning {"status": "ok"} with HTTP 200.
+    - Deep diagnostic mode enabled via ?full=true or ?deep=true to test
+      knowledge base loading, Granite models, and Watson STT status.
 
-This is the first endpoint to call after deployment or after any config
-change. If /api/health returns HTTP 200 with both Granite checks passing,
-the full pipeline will work.
-
-Do NOT call /api/health in production automatically — each call consumes
-IBM watsonx.ai token quota. Use it manually to verify new deployments.
+This endpoint is ideal for waking up Render free instances and health probes.
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from utils.career_loader import get_all_careers
 from utils.granite_client import call_granite_fast, call_granite_strong
@@ -38,20 +31,25 @@ _HEALTH_PROMPT = (
 @health_bp.route("/health", methods=["GET"])
 def health():
     """
-    Comprehensive health check.
+    Health check endpoint.
 
     Returns
     -------
     200 OK
-        All checks passed. Body contains per-component status.
-    207 Multi-Status
-        Application is running but one or more optional checks failed.
-    500 Internal Server Error
-        A critical check (knowledge base or required config) failed.
+        {"status": "ok"} by default for instant instance wake-up.
+        If ?full=true or ?deep=true, executes full component diagnostics.
     """
+    is_deep = (
+        request.args.get("full", "").lower() == "true"
+        or request.args.get("deep", "").lower() == "true"
+    )
+    if not is_deep:
+        return jsonify({"status": "ok"}), 200
+
     result = {
+        "status": "ok",
         "application": "Agentic Career Counseling Companion",
-        "schema_version": config.GRANITE_FAST_MODEL,  # sanity check config loads
+        "schema_version": config.GRANITE_FAST_MODEL,
         "checks": {}
     }
 
@@ -126,7 +124,7 @@ def health():
     http_status = 200 if all_ok else 207
 
     log.info(
-        "/api/health → %d | KB=%s | fast=%s | strong=%s",
+        "/api/health?full=true → %d | KB=%s | fast=%s | strong=%s",
         http_status,
         result["checks"]["knowledge_base"].get("status"),
         result["checks"].get("granite_fast", {}).get("status"),

@@ -122,7 +122,8 @@ IBM_API_KEY=your_ibm_cloud_api_key
 IBM_PROJECT_ID=your_ibm_watsonx_project_id
 IBM_WATSONX_URL=https://us-south.ml.cloud.ibm.com
 FLASK_SECRET_KEY=your_secure_session_key
-FRONTEND_URL=http://localhost:3000
+CORS_ORIGINS=https://agentic-career-companion.balrajukonne.cv,https://agentic-career-companion.vercel.app,http://localhost:5173
+FRONTEND_URL=https://agentic-career-companion.balrajukonne.cv
 SESSION_COOKIE_SAMESITE=Lax
 FLASK_ENV=development
 ```
@@ -160,7 +161,7 @@ python -m pytest -v
 ### Backend (Render)
 - **Build command:** `pip install -r requirements.txt`
 - **Start command:** `gunicorn app:app`
-- **Env variables:** IBM watsonx.ai credentials, `FRONTEND_URL` → your frontend URL, `SESSION_COOKIE_SAMESITE=None` for cross-origin cookie sharing in production
+- **Env variables:** IBM watsonx.ai credentials, `CORS_ORIGINS=https://agentic-career-companion.balrajukonne.cv,https://agentic-career-companion.vercel.app,http://localhost:5173`, `FRONTEND_URL=https://agentic-career-companion.balrajukonne.cv`, and `SESSION_COOKIE_SAMESITE=None` for cross-origin cookie sharing in production
 - **Note:** Set `PYTHON_VERSION=3.11.9` (or commit `backend/runtime.txt`) — avoids compiler errors when installing packages like `pandas` on newer Python versions
 
 ## Acknowledgments
