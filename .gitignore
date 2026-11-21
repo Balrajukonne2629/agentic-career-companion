@@ -1,25 +1,53 @@
 # Frontend / Node.js
+node_modules/
 frontend/node_modules/
+dist/
 frontend/dist/
+.eslintcache
+.parcel-cache
+
+# Vite build temp files
+frontend/vite.config.js.timestamp-*.mjs
+*.timestamp-*.mjs
 
 # Backend / Python
+.venv/
+venv/
+env/
 backend/.venv/
 backend/venv/
 backend/env/
 backend/static/
 backend/.pytest_cache/
+.pytest_cache/
+__pycache__/
 backend/__pycache__/
-backend/routes/__pycache__/
-backend/agents/__pycache__/
-backend/utils/__pycache__/
-*.pyc
+backend/*/__pycache__/
+*.py[cod]
+*$py.class
 
 # Local Configuration & Secrets
-backend/.env
 .env
 .env.local
+.env.*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+!*.example
+
+# Deployment / Vercel
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # IDEs & System Files
 .vscode/
+.idea/
 .DS_Store
 Thumbs.db
+desktop.ini

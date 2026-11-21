@@ -4,6 +4,10 @@ import Footer from './components/Footer';
 import PipelinePreview from './components/PipelinePreview';
 import TopBar from './components/TopBar';
 import WorkspaceCard from './components/WorkspaceCard';
+import FAQPage from './components/FAQPage';
+import AboutPage from './components/AboutPage';
+import HowItWorksPage from './components/HowItWorksPage';
+import LandingSEOContent from './components/LandingSEOContent';
 import {
   STORAGE_KEYS,
   createInitialPipelineRows,
@@ -53,6 +57,54 @@ function App() {
   const [pipelineResults, setPipelineResults] = useState(() => createEmptyResults());
   const [toasts, setToasts] = useState([]);
   const toastTimers = useRef([]);
+
+  // Client-side router path state
+  const [currentPath, setCurrentPath] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname || '/';
+    }
+    return '/';
+  });
+
+  const navigate = useCallback((path) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', path);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    setCurrentPath(path);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const onPopState = () => {
+      setCurrentPath(window.location.pathname || '/');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // SEO: Dynamic noindex, nofollow on private routes (dashboard / results)
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const isPrivate =
+      currentPath === '/dashboard' ||
+      currentPath === '/results' ||
+      screen === 'dashboard';
+
+    let robotsMeta = document.querySelector('meta[name="robots"]');
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta');
+      robotsMeta.name = 'robots';
+      document.head.appendChild(robotsMeta);
+    }
+
+    if (isPrivate) {
+      robotsMeta.setAttribute('content', 'noindex, nofollow');
+    } else {
+      robotsMeta.setAttribute('content', 'index, follow');
+    }
+  }, [currentPath, screen]);
 
   const showToast = useCallback((message, type = 'success') => {
     const id = Date.now() + Math.random();
@@ -246,6 +298,10 @@ function App() {
     setActiveIndex(null);
     setErrorIndex(null);
     setScreen('dashboard');
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', '/dashboard');
+    }
+    setCurrentPath('/dashboard');
   };
 
   const handleStartPipeline = (payload) => {
@@ -253,6 +309,12 @@ function App() {
     setLastTranscript(transcript);
     setPipelineResults(createEmptyResults());
     setPipelineRows(createInitialPipelineRows());
+    if (currentPath !== '/') {
+      if (typeof window !== 'undefined') {
+        window.history.pushState(null, '', '/');
+      }
+      setCurrentPath('/');
+    }
     void runPipelineFrom(0, transcript, createEmptyResults());
   };
 
@@ -300,7 +362,17 @@ function App() {
     setActiveIndex(null);
   };
 
+  const handleStartOver = () => {
+    setScreen('compose');
+    setLastTranscript('');
+    setPipelineResults(createEmptyResults());
+    setPipelineRows(createInitialPipelineRows());
+    navigate('/');
+  };
+
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  const isDashboardView = currentPath === '/dashboard' || currentPath === '/results' || screen === 'dashboard';
 
   return (
     <div className="relative isolate min-h-screen overflow-hidden bg-transparent text-zinc-700 transition-colors duration-300 dark:text-zinc-200 print:h-auto print:overflow-visible">
@@ -309,29 +381,83 @@ function App() {
       </div>
 
       <div className="relative z-10">
-        <TopBar theme={theme} onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} />
+        <TopBar
+          theme={theme}
+          onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+          currentPath={currentPath}
+          onNavigate={navigate}
+        />
       </div>
 
-      <main className={`relative z-10 mx-auto flex w-full flex-col gap-4 px-4 py-8 sm:px-6 sm:py-10 lg:px-0 lg:py-12 ${screen === 'dashboard' ? 'max-w-6xl' : 'max-w-2xl'}`}>
-        <WorkspaceCard
-          mode={mode}
-          onModeChange={setMode}
-          screen={screen}
-          pipelineRows={pipelineRows}
-          pipelineResults={pipelineResults}
-          onStartPipeline={handleStartPipeline}
-          onRetryStep={handleRetryStep}
-          onSubmitIncomplete={handleSubmitIncomplete}
-          onSimulateError={handleSimulateError}
-          draft={draft}
-          setDraft={setDraft}
-          reducedMotion={reduceMotion}
-        />
+      <main
+        className={`relative z-10 mx-auto flex w-full flex-col gap-4 px-4 py-8 sm:px-6 sm:py-10 lg:px-0 lg:py-12 ${
+          isDashboardView ? 'max-w-6xl' : currentPath === '/' ? 'max-w-4xl' : 'max-w-4xl'
+        }`}
+      >
+        {currentPath === '/faq' ? (
+          <FAQPage onNavigate={navigate} />
+        ) : currentPath === '/about' ? (
+          <AboutPage onNavigate={navigate} />
+        ) : currentPath === '/how-it-works' ? (
+          <HowItWorksPage onNavigate={navigate} />
+        ) : isDashboardView ? (
+          <div className="w-full">
+            <div className="mb-4 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleStartOver}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white/80 px-4 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm transition hover:bg-zinc-100 dark:border-white/10 dark:bg-zinc-900/80 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              >
+                ← Start New Assessment
+              </button>
+              <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-ibm-blue dark:bg-blue-950/40 dark:text-blue-300">
+                Career Dashboard
+              </span>
+            </div>
+            <WorkspaceCard
+              mode={mode}
+              onModeChange={setMode}
+              screen="dashboard"
+              pipelineRows={pipelineRows}
+              pipelineResults={pipelineResults}
+              onStartPipeline={handleStartPipeline}
+              onRetryStep={handleRetryStep}
+              onSubmitIncomplete={handleSubmitIncomplete}
+              onSimulateError={handleSimulateError}
+              draft={draft}
+              setDraft={setDraft}
+              reducedMotion={reduceMotion}
+            />
+          </div>
+        ) : (
+          /* Landing Page: Workspace + Pipeline Preview + Static SEO/AEO Content */
+          <>
+            <div className="mx-auto w-full max-w-2xl">
+              <WorkspaceCard
+                mode={mode}
+                onModeChange={setMode}
+                screen={screen}
+                pipelineRows={pipelineRows}
+                pipelineResults={pipelineResults}
+                onStartPipeline={handleStartPipeline}
+                onRetryStep={handleRetryStep}
+                onSubmitIncomplete={handleSubmitIncomplete}
+                onSimulateError={handleSimulateError}
+                draft={draft}
+                setDraft={setDraft}
+                reducedMotion={reduceMotion}
+              />
 
-        <PipelinePreview stages={previewRows} />
+              <PipelinePreview stages={previewRows} />
+            </div>
+
+            {/* Static Semantic SEO Content for Landing Page */}
+            <LandingSEOContent onNavigate={navigate} />
+          </>
+        )}
       </main>
 
-      <Footer />
+      <Footer onNavigate={navigate} />
 
       {/* Toast notifications */}
       <div

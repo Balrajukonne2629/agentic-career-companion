@@ -4,9 +4,14 @@ import { useEffect, useState } from 'react';
 import { howItWorksStages, projectName, projectSubtitle, topBarBadge } from '../data/workspaceCopy';
 
 /**
- * @param {{ theme: 'light' | 'dark', onToggleTheme: () => void }} props
+ * @param {{
+ *   theme: 'light' | 'dark',
+ *   onToggleTheme: () => void,
+ *   currentPath?: string,
+ *   onNavigate?: (path: string) => void
+ * }} props
  */
-function TopBar({ theme, onToggleTheme }) {
+function TopBar({ theme, onToggleTheme, currentPath = '/', onNavigate }) {
   const [infoOpen, setInfoOpen] = useState(false);
 
   useEffect(() => {
@@ -20,18 +25,87 @@ function TopBar({ theme, onToggleTheme }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [infoOpen]);
 
+  const handleNavClick = (event, path) => {
+    event.preventDefault();
+    if (onNavigate) {
+      onNavigate(path);
+    }
+  };
+
+  const navLinks = [
+    { label: 'Home', path: '/' },
+    { label: 'How It Works', path: '/how-it-works' },
+    { label: 'FAQ', path: '/faq' },
+    { label: 'About', path: '/about' },
+  ];
+
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/55 backdrop-blur-2xl dark:bg-zinc-950/55">
-        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-zinc-950 text-white shadow-sm dark:bg-white dark:text-zinc-950">
+      <header className="sticky top-0 z-50 border-b border-zinc-200/50 bg-white/70 backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-950/70">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          {/* Brand logo & title */}
+          <a
+            href="/"
+            onClick={(e) => handleNavClick(e, '/')}
+            className="flex min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ibm-blue"
+            aria-label="Agentic Career Companion Home"
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-950 text-white shadow-sm dark:bg-white dark:text-zinc-950">
               <BrainCircuit className="h-4 w-4" aria-hidden="true" />
             </div>
-            <p className="truncate text-sm font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">{projectName}</p>
-          </div>
+            <p className="truncate text-sm font-bold tracking-tight text-zinc-950 dark:text-zinc-50">{projectName}</p>
+          </a>
 
+          {/* Navigation Links */}
+          <nav className="hidden items-center gap-1 sm:flex" aria-label="Main navigation">
+            {navLinks.map((link) => {
+              const isActive = currentPath === link.path;
+              return (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  onClick={(e) => handleNavClick(e, link.path)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition duration-150 ${
+                    isActive
+                      ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950'
+                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-50'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          {/* Action buttons */}
           <div className="flex items-center gap-1.5">
+            {/* Mobile Nav dropdown/links toggle shortcut */}
+            <div className="flex items-center gap-1 sm:hidden">
+              <a
+                href="/faq"
+                onClick={(e) => handleNavClick(e, '/faq')}
+                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  currentPath === '/faq'
+                    ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950'
+                    : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300'
+                }`}
+              >
+                FAQ
+              </a>
+              <a
+                href="/about"
+                onClick={(e) => handleNavClick(e, '/about')}
+                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  currentPath === '/about'
+                    ? 'bg-zinc-950 text-white dark:bg-white dark:text-zinc-950'
+                    : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300'
+                }`}
+              >
+                About
+              </a>
+            </div>
+
             <button
               type="button"
               onClick={onToggleTheme}
@@ -151,5 +225,3 @@ function TopBar({ theme, onToggleTheme }) {
 }
 
 export default TopBar;
-
-
