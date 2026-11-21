@@ -50,7 +50,7 @@ function LandingSEOContent({ onNavigate }) {
             Agentic Career Companion transforms the traditional, fragmented student career counseling experience into an autonomous, data-driven journey. Many computer science and engineering students struggle to translate academic coursework into tangible industry readiness. This platform provides an intelligent, conversational interface where students can either speak naturally or write their academic backgrounds, technical competencies, personal projects, and career aspirations.
           </p>
           <p>
-            The platform instantly processes student transcripts, evaluates engineering proficiencies against comprehensive industry benchmarks, and constructs a tailored 30, 60, and 90-day learning curriculum. The entire workflow gives students actionable clarity on exactly where they stand today and what concrete steps they need to take to secure their dream software engineering roles.
+            The platform analyzes spoken or typed student introductions, evaluates engineering proficiencies against comprehensive industry benchmarks, and constructs a tailored 30, 60, and 90-day learning curriculum. The entire workflow gives students actionable clarity on exactly where they stand today and what concrete steps they need to take to secure their dream software engineering roles.
           </p>
         </div>
       </section>
@@ -64,7 +64,7 @@ function LandingSEOContent({ onNavigate }) {
           </h2>
         </div>
         <p className="mt-2 text-xs leading-5 text-zinc-600 sm:text-sm sm:leading-6 dark:text-zinc-400">
-          The counseling engine coordinates five dedicated AI agents powered by IBM watsonx.ai Granite models, each focused on a single responsibility:
+          The counseling engine orchestrates five specialized agents combining IBM watsonx.ai Granite foundation models with deterministic Python logic. The Validation, Profile, Career Recommendation, and Roadmap agents leverage Granite for natural language understanding and personalized synthesis, while the Skill Gap Agent runs entirely as deterministic Python set-difference algorithms for mathematical precision, complemented by Python scoring and validation rules across every stage:
         </p>
 
         <div className="mt-5 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
@@ -75,7 +75,7 @@ function LandingSEOContent({ onNavigate }) {
             </div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Profile Extraction &amp; Verification</h3>
             <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              Parses conversational voice inputs or written text, normalizes academic parameters (CGPA, year of study, skills), and interactively prompts for missing details.
+              Extracts profile parameters from spoken or typed introductions using IBM watsonx.ai Granite, followed by deterministic Python normalization and validation checks.
             </p>
           </div>
 
@@ -86,7 +86,7 @@ function LandingSEOContent({ onNavigate }) {
             </div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Readiness &amp; Tier Analysis</h3>
             <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              Synthesizes student credentials into an objective 0 to 100 readiness score and categorizes competencies into transparent tiers (Novice to Advanced).
+              Generates narrative summaries and strengths with IBM watsonx.ai Granite, while computing readiness scores (0 to 100) and tiers via deterministic Python formulas.
             </p>
           </div>
 
@@ -97,7 +97,7 @@ function LandingSEOContent({ onNavigate }) {
             </div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Deterministic Path Matching</h3>
             <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              Matches students against curated industry career blueprints, scoring and ranking the top 3 best-suited career pathways with confidence metrics.
+              Scores and ranks career matches using deterministic Python overlap algorithms and difficulty penalties, generating tailored match reasoning with Granite.
             </p>
           </div>
 
@@ -108,7 +108,7 @@ function LandingSEOContent({ onNavigate }) {
             </div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">Set-Difference Gap Mining</h3>
             <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              Calculates exact differences between current competencies and industry targets, prioritizing required tools, frameworks, and foundational concepts.
+              Operates entirely on deterministic Python logic, computing exact mathematical set-differences to identify missing required skills, nice-to-haves, and core tools without LLM hallucinations.
             </p>
           </div>
 
@@ -119,7 +119,7 @@ function LandingSEOContent({ onNavigate }) {
             </div>
             <h3 className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">30/60/90-Day Actionable Curriculum</h3>
             <p className="mt-1 text-xs leading-5 text-zinc-600 dark:text-zinc-400">
-              Constructs an adaptive, milestone-driven learning timeline complete with capstone projects, key topics, recommended certifications, and weekly targets.
+              Synthesizes milestone 30/60/90-day learning curricula with IBM watsonx.ai Granite, paired with deterministic Python selection of verified industry certifications and projects.
             </p>
           </div>
         </div>
@@ -197,13 +197,18 @@ function LandingSEOContent({ onNavigate }) {
               <span>GitHub</span>
               <ExternalLink className="h-3 w-3" aria-hidden="true" />
             </a>
-            <button
-              type="button"
-              onClick={() => onNavigate && onNavigate('/faq')}
+            <a
+              href="/faq"
+              onClick={(e) => {
+                e.preventDefault();
+                if (onNavigate) {
+                  onNavigate('/faq');
+                }
+              }}
               className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 transition duration-200 hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-300"
             >
               <span>View FAQ</span>
-            </button>
+            </a>
           </div>
         </div>
       </section>

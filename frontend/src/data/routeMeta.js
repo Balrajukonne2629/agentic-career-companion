@@ -95,6 +95,7 @@ export function applyRouteMeta(path, isDashboard = false) {
   setMetaTag('meta[name="robots"]', 'name', 'robots', meta.robots);
 
   // Open Graph
+  setMetaTag('meta[property="og:site_name"]', 'property', 'og:site_name', 'Agentic Career Companion');
   setMetaTag('meta[property="og:title"]', 'property', 'og:title', meta.ogTitle);
   setMetaTag('meta[property="og:description"]', 'property', 'og:description', meta.ogDescription);
   setMetaTag('meta[property="og:url"]', 'property', 'og:url', meta.ogUrl);

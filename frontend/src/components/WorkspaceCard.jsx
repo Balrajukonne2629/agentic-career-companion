@@ -585,9 +585,9 @@ function WorkspaceCard({
     <section className="space-y-6">
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-zinc-500 dark:text-zinc-500">Workspace</p>
-        <h1 className="mx-auto mt-3 max-w-2xl text-balance text-3xl font-bold leading-[0.96] tracking-tight text-zinc-950 dark:text-zinc-50 md:text-5xl lg:text-6xl">
+        <h2 className="mx-auto mt-3 max-w-2xl text-balance text-3xl font-bold leading-[0.96] tracking-tight text-zinc-950 dark:text-zinc-50 md:text-5xl lg:text-6xl">
           Let's understand you better
-        </h1>
+        </h2>
         <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-7 text-zinc-600 dark:text-zinc-300 md:text-lg md:leading-8">
           Share your background and goals - we'll build your personalized career roadmap.
         </p>

@@ -5,7 +5,7 @@ export const modeOptions = [
 
 export const topBarBadge = 'Powered by IBM Granite & watsonx.ai';
 
-export const projectName = 'Agentic Career Counseling Companion';
+export const projectName = 'Agentic Career Companion';
 
 export const projectSubtitle =
   'An AI workspace that turns your background, goals, and strengths into a personalized career roadmap.';
